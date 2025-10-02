@@ -39,14 +39,26 @@ check_kubectl() {
 }
 
 create_namespace() {
-    log_info "Creating Kubernetes namespace 'mindx'..."
+    log_info "Creating Kubernetes namespace 'mindx-app'..."
+
+    if kubectl get namespace mindx-app &> /dev/null; then
+        log_warning "Namespace 'mindx-app' already exists. Skipping creation."
+        return
+    fi
+
     kubectl apply -f namespace.yaml
     log_success "Namespace created"
 }
 
 create_secret() {
     log_info "Creating Docker registry secret..."
-    kubectl apply -f secret.yaml
+
+    if kubectl get secret regcred -n mindx-app &> /dev/null; then
+        log_warning "Secret 'regcred' already exists in namespace 'mindx-app'. Skipping creation."
+        return
+    fi
+
+    kubectl apply -f secrets.yaml
     log_success "Secret created"
 }
 
@@ -61,3 +73,32 @@ deploy_frontend() {
     kubectl apply -f frontend-deployment.yaml
     log_success "Frontend deployed"
 }
+
+print_summary() {
+    echo -e "${GREEN}=========================================================================${NC}"
+    echo -e "${GREEN}          MindX Application Deployed Successfully!${NC}"
+    echo -e "${GREEN}=========================================================================${NC}"
+    echo ""
+    log_info "Pods: "
+    kubectl get pods -n mindx-app
+    echo ""
+
+    log_info "Services: "
+    kubectl get svc -n mindx-app
+    echo ""
+}
+
+main() {
+    check_kubectl
+    create_namespace
+    create_secret
+    deploy_backend
+    deploy_frontend
+    print_summary
+}
+
+main
+
+echo "🎉 Script finished. Press Enter to exit..."
+read
+

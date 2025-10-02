@@ -46,12 +46,6 @@ check_azure_cli() {
     log_success "Azure CLI found"
 }
 
-log_out_from_company_account() {
-    log_info "Logging out from any existing Azure account..."
-    az logout
-    log_success "Logged out successfully"
-}
-
 check_azure_login() {
     log_info "Checking Azure login status..."
     if ! az account show &> /dev/null; then
