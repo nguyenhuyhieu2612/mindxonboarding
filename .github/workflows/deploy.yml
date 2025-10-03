@@ -6,13 +6,15 @@ on:
 
 env:
   ACR_NAME: ${{ secrets.ACR_NAME }}
+  ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+  ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
   AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
   AKS_RESOURCE_GROUP: ${{ secrets.AKS_RESOURCE_GROUP }}
   CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   NAMESPACE: mindx-app
   BACKEND_DEPLOYMENT: backend
   FRONTEND_DEPLOYMENT: frontend
-  INGRESS_NAME: mindx-fullstack-ingress
+  INGRESS_NAME: mindx-ingress
 
 jobs:
   build-deploy:
@@ -30,8 +32,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ env.ACR_NAME }}.azurecr.io
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+          username: ${{ env.ACR_USERNAME }}
+          password: ${{ env.ACR_PASSWORD }}
 
       # -------------------------------------------
       - name: Build and Push Backend Image
@@ -61,7 +63,7 @@ jobs:
       - name: Azure Login
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          creds: ${{ env.CREDENTIALS }}
 
       - name: Set AKS context
         uses: azure/aks-set-context@v1
