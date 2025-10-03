@@ -5,5 +5,5 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [containerQueries()],
+  plugins: [containerQueries],
 };
