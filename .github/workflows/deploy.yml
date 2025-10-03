@@ -23,11 +23,9 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      # -------------------------------------------
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # -------------------------------------------
       - name: Login to ACR
         uses: docker/login-action@v3
         with:
@@ -35,7 +33,6 @@ jobs:
           username: ${{ env.ACR_USERNAME }}
           password: ${{ env.ACR_PASSWORD }}
 
-      # -------------------------------------------
       - name: Build and Push Backend Image
         run: |
           cd backend
@@ -45,9 +42,8 @@ jobs:
           docker build -t $IMAGE_TAG -t $IMAGE_TAG_SHA .
           docker push $IMAGE_TAG
           docker push $IMAGE_TAG_SHA
-          echo "🎉 Backend Image pushed"
+          echo "🎉 Backend Image pushed with SHA tag"
 
-      # -------------------------------------------
       - name: Build and Push Frontend Image
         run: |
           cd frontend
@@ -57,9 +53,8 @@ jobs:
           docker build -t $IMAGE_TAG -t $IMAGE_TAG_SHA .
           docker push $IMAGE_TAG
           docker push $IMAGE_TAG_SHA
-          echo "🎉 Frontend Image pushed"
+          echo "🎉 Frontend Image pushed with SHA tag"
 
-      # -------------------------------------------
       - name: Azure Login
         uses: azure/login@v1
         with:
@@ -72,20 +67,18 @@ jobs:
           cluster-name: ${{ env.AKS_CLUSTER_NAME }}
           creds: ${{ env.CREDENTIALS }}
 
-      # -------------------------------------------
       - name: Deploy Backend to AKS
         run: |
-          kubectl -n ${{ env.NAMESPACE }} set image deployment/${{ env.BACKEND_DEPLOYMENT }} backend=${{ env.ACR_NAME }}.azurecr.io/backend:latest
+          kubectl -n ${{ env.NAMESPACE }} set image deployment/${{ env.BACKEND_DEPLOYMENT }} backend=${{ env.ACR_NAME }}.azurecr.io/backend:${{ github.sha }}
           kubectl -n ${{ env.NAMESPACE }} rollout status deployment/${{ env.BACKEND_DEPLOYMENT }}
-          echo "🚀 Backend deployed"
+          echo "🚀 Backend deployed with SHA tag"
 
       - name: Deploy Frontend to AKS
         run: |
-          kubectl -n ${{ env.NAMESPACE }} set image deployment/${{ env.FRONTEND_DEPLOYMENT }} frontend=${{ env.ACR_NAME }}.azurecr.io/frontend:latest
+          kubectl -n ${{ env.NAMESPACE }} set image deployment/${{ env.FRONTEND_DEPLOYMENT }} frontend=${{ env.ACR_NAME }}.azurecr.io/frontend:${{ github.sha }}
           kubectl -n ${{ env.NAMESPACE }} rollout status deployment/${{ env.FRONTEND_DEPLOYMENT }}
-          echo "🚀 Frontend deployed"
+          echo "🚀 Frontend deployed with SHA tag"
 
-      # -------------------------------------------
       - name: Health Check
         run: |
           echo "⏳ Waiting 30s for services to stabilize..."
@@ -115,14 +108,14 @@ jobs:
 
           echo "🎉 Deployment successful and services are healthy"
 
-      # -------------------------------------------
       - name: Deployment Summary
         run: |
           echo "----------------------------------------"
           echo "Deployment Summary:"
-          echo "Backend Image: ${{ env.ACR_NAME }}.azurecr.io/backend:latest"
-          echo "Frontend Image: ${{ env.ACR_NAME }}.azurecr.io/frontend:latest"
+          echo "Backend Image: ${{ env.ACR_NAME }}.azurecr.io/backend:${{ github.sha }}"
+          echo "Frontend Image: ${{ env.ACR_NAME }}.azurecr.io/frontend:${{ github.sha }}"
           echo "AKS Cluster: ${{ env.AKS_CLUSTER_NAME }}"
           echo "Namespace: ${{ env.NAMESPACE }}"
           echo "Ingress: ${{ env.INGRESS_NAME }}"
           echo "----------------------------------------"
+          echo "🎉 All steps completed successfully!"
