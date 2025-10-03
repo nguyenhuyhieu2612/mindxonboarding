@@ -96,8 +96,8 @@ main() {
     echo ""
 
     acr_login
-    # build_backend
-    # push_backend
+    build_backend
+    push_backend
     build_frontend
     push_frontend
     list_images

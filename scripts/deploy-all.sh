@@ -1,4 +1,4 @@
-set -e
+# set -e
 
 # Colors
 GREEN='\033[0;32m'
@@ -74,6 +74,12 @@ deploy_frontend() {
     log_success "Frontend deployed"
 }
 
+deploy_ingress() {
+    log_info "Deploying Ingress resources..."
+    kubectl apply -f ingress.yaml
+    log_success "Ingress resources deployed"
+}
+
 print_summary() {
     echo -e "${GREEN}=========================================================================${NC}"
     echo -e "${GREEN}          MindX Application Deployed Successfully!${NC}"
@@ -86,6 +92,11 @@ print_summary() {
     log_info "Services: "
     kubectl get svc -n mindx-app
     echo ""
+
+    log_info "Ingress: "
+    kubectl get ingress -n mindx-app
+    echo ""    
+    log_info "To access the application, use the EXTERNAL-IP from the Ingress resource."
 }
 
 main() {
@@ -94,6 +105,7 @@ main() {
     create_secret
     deploy_backend
     deploy_frontend
+    deploy_ingress
     print_summary
 }
 
