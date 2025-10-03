@@ -70,6 +70,7 @@ jobs:
         with:
           resource-group: ${{ env.AKS_RESOURCE_GROUP }}
           cluster-name: ${{ env.AKS_CLUSTER_NAME }}
+          creds: ${{ env.CREDENTIALS }}
 
       # -------------------------------------------
       - name: Deploy Backend to AKS
