@@ -1,15 +1,11 @@
-import React from "react";
 import Header from "@/components/header";
+import { Outlet } from "react-router-dom";
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
-
-export default function MainLayout({ children }: MainLayoutProps) {
+export default function MainLayout() {
   return (
     <div className="layout-container flex h-full grow flex-col">
       <Header />
-      {children}
+      <Outlet />
     </div>
   );
 }

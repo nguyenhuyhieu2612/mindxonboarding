@@ -7,7 +7,15 @@ type AppConfig = {
 
 type OpenIDConfig = {
   issuer: string;
+  authorizationEndpoint: string;
+  tokenEndpoint: string;
+  userInfoEndpoint: string;
+  jwksUri: string;
   clientId: string;
+  clientSecret: string;
+  callbackURL: string;
+  scope: string;
+  responseType: string;
 };
 
 type JWTConfig = {
@@ -20,12 +28,21 @@ type CORSConfig = {
   origin: string;
   methods: string[];
   credentials: boolean;
+  frontendURL: string;
+};
+
+type SessionConfig = {
+  accessTokenSecret: string;
+  accessTokenExpiresIn: number;
+  refreshTokenSecret: string;
+  refreshTokenExpiresIn: number;
 };
 
 export type Config = {
   app: AppConfig;
-  openid?: OpenIDConfig;
+  openid: OpenIDConfig;
   jwt: JWTConfig;
-  cors?: CORSConfig;
+  cors: CORSConfig;
+  session: SessionConfig;
 };
 export type { AppConfig, OpenIDConfig, JWTConfig, CORSConfig };

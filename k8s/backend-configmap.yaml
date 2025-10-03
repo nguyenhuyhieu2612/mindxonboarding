@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: mindx-app
+data:
+  NODE_ENV: "development"
+  PORT: "8000"
+
+  # OpenID Connect
+  OIDC_ISSUER: "https://id.mindx.edu.vn"
+  OIDC_AUTHORIZATION_ENDPOINT: "https://id-dev.mindx.edu.vn/auth"
+  OIDC_TOKEN_ENDPOINT: "https://id-dev.mindx.edu.vn/token"
+  OIDC_USERINFO_ENDPOINT: "https://id-dev.mindx.edu.vn/me"
+  OIDC_JWKS_URI: "https://id-dev.mindx.edu.vn/jwks"
+
+  # Redirect URI
+  OIDC_REDIRECT_URI: "http://localhost:3000/auth/callback"
+
+  # Scope & Flow
+  OIDC_SCOPE: "openid profile email"
+  OIDC_RESPONSE_TYPE: "code"
+
+  # CORS
+  FRONTEND_URL: "/"
+
+  # SESSION & JWT
+  ACCESS_TOKEN_EXPIRES_IN: "900"
+  REFRESH_TOKEN_EXPIRES_IN: "604800"
+  JWT_EXPIRES_IN: "24h"

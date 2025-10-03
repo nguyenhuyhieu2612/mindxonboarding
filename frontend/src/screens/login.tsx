@@ -5,10 +5,15 @@ export default function Login() {
         <h2 className="text-[#1b0d0d] tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-5">
           Welcome back
         </h2>
-        <div className="flex px-4 py-3 justify-center">
-          <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#ec1313] text-[#fcf8f8] text-base font-bold leading-normal tracking-[0.015em]">
-            <span className="truncate">Sign in with MindX account</span>
-          </button>
+        <div className="flex justify-center">
+          <div className="flex flex-1 gap-3 max-w-[480px] flex-col items-stretch px-4 py-3">
+            <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#ec1313] text-[#fcf8f8] text-base font-bold leading-normal tracking-[0.015em] w-full">
+              <span className="truncate">Sign in with MindX account</span>
+            </button>
+            <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#f3e7e7] text-[#1b0d0d] text-base font-bold leading-normal tracking-[0.015em] w-full">
+              <span className="truncate">Sign in with Google</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
