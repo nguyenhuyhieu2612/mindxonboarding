@@ -27,7 +27,7 @@ export default function useApiHealth() {
 
   React.useEffect(() => {
     if (isHealthy === true) {
-      console.log("API is healthy");
+      window.alert("API is healthy");
     }
   }, [isHealthy]);
 
