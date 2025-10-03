@@ -1,0 +1,124 @@
+name: Build & Deploy to AKS
+
+on:
+  push:
+    branches: [main]
+
+env:
+  ACR_NAME: ${{ secrets.ACR_NAME }}
+  AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
+  AKS_RESOURCE_GROUP: ${{ secrets.AKS_RESOURCE_GROUP }}
+  NAMESPACE: mindx-app
+  BACKEND_DEPLOYMENT: backend
+  FRONTEND_DEPLOYMENT: frontend
+  INGRESS_NAME: mindx-fullstack-ingress
+
+jobs:
+  build-deploy:
+    name: Build, Push & Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # -------------------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -------------------------------------------
+      - name: Login to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR_NAME }}.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # -------------------------------------------
+      - name: Build and Push Backend Image
+        run: |
+          cd backend
+          IMAGE_TAG="${{ env.ACR_NAME }}.azurecr.io/backend:latest"
+          IMAGE_TAG_SHA="${{ env.ACR_NAME }}.azurecr.io/backend:${{ github.sha }}"
+
+          docker build -t $IMAGE_TAG -t $IMAGE_TAG_SHA .
+          docker push $IMAGE_TAG
+          docker push $IMAGE_TAG_SHA
+          echo "🎉 Backend Image pushed"
+
+      # -------------------------------------------
+      - name: Build and Push Frontend Image
+        run: |
+          cd frontend
+          IMAGE_TAG="${{ env.ACR_NAME }}.azurecr.io/frontend:latest"
+          IMAGE_TAG_SHA="${{ env.ACR_NAME }}.azurecr.io/frontend:${{ github.sha }}"
+
+          docker build -t $IMAGE_TAG -t $IMAGE_TAG_SHA .
+          docker push $IMAGE_TAG
+          docker push $IMAGE_TAG_SHA
+          echo "🎉 Frontend Image pushed"
+
+      # -------------------------------------------
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v1
+        with:
+          resource-group: ${{ env.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ env.AKS_CLUSTER_NAME }}
+
+      # -------------------------------------------
+      - name: Deploy Backend to AKS
+        run: |
+          kubectl -n ${{ env.NAMESPACE }} set image deployment/${{ env.BACKEND_DEPLOYMENT }} backend=${{ env.ACR_NAME }}.azurecr.io/backend:latest
+          kubectl -n ${{ env.NAMESPACE }} rollout status deployment/${{ env.BACKEND_DEPLOYMENT }}
+          echo "🚀 Backend deployed"
+
+      - name: Deploy Frontend to AKS
+        run: |
+          kubectl -n ${{ env.NAMESPACE }} set image deployment/${{ env.FRONTEND_DEPLOYMENT }} frontend=${{ env.ACR_NAME }}.azurecr.io/frontend:latest
+          kubectl -n ${{ env.NAMESPACE }} rollout status deployment/${{ env.FRONTEND_DEPLOYMENT }}
+          echo "🚀 Frontend deployed"
+
+      # -------------------------------------------
+      - name: Health Check
+        run: |
+          echo "⏳ Waiting 30s for services to stabilize..."
+          sleep 30
+
+          EXTERNAL_IP=$(kubectl get ingress ${{ env.INGRESS_NAME }} -n ${{ env.NAMESPACE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "")
+          if [ -z "$EXTERNAL_IP" ]; then
+            echo "⚠️  No external IP found, skipping health check"
+            exit 0
+          fi
+
+          echo "Testing Backend..."
+          if curl -f -s http://$EXTERNAL_IP/api/health > /dev/null; then
+            echo "✅ Backend is healthy"
+          else
+            echo "❌ Backend health check failed"
+            exit 1
+          fi
+
+          echo "Testing Frontend..."
+          if curl -f -s http://$EXTERNAL_IP/ > /dev/null; then
+            echo "✅ Frontend is healthy"
+          else
+            echo "❌ Frontend health check failed"
+            exit 1
+          fi
+
+          echo "🎉 Deployment successful and services are healthy"
+
+      # -------------------------------------------
+      - name: Deployment Summary
+        run: |
+          echo "----------------------------------------"
+          echo "Deployment Summary:"
+          echo "Backend Image: ${{ env.ACR_NAME }}.azurecr.io/backend:latest"
+          echo "Frontend Image: ${{ env.ACR_NAME }}.azurecr.io/frontend:latest"
+          echo "AKS Cluster: ${{ env.AKS_CLUSTER_NAME }}"
+          echo "Namespace: ${{ env.NAMESPACE }}"
+          echo "Ingress: ${{ env.INGRESS_NAME }}"
+          echo "----------------------------------------"
