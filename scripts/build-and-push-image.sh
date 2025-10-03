@@ -1,4 +1,5 @@
-# Colors
+set -e
+
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
@@ -20,14 +21,12 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Load environment variables
 if [ -f ../.env ]; then
     source ../.env
 else
     log_error ".env file not found!"
     exit 1
 fi
-
 
 acr_login() {
     log_info "Logging into Azure Container Registry..."
@@ -79,14 +78,15 @@ push_frontend() {
     log_success "Frontend Docker image pushed to ACR"
 }
 
-list_images() {
-    log_info "Listing images in ACR..."
-
-    log_info "Backend Images:"
-    az acr repository show-tags --name "$ACR_NAME" --repository backend --output table
-
-    log_info "Frontend Images:"
-    az acr repository show-tags --name "$ACR_NAME" --repository frontend --output table
+print_summary() {
+    echo -e "${BLUE}========================================${NC}"
+    echo -e "${BLUE}          Deployment Summary           ${NC}"
+    echo -e "${BLUE}========================================${NC}"
+    echo ""
+    log_info "Backend Image: $ACR_LOGIN_SERVER/backend:latest"
+    log_info "Frontend Image: $ACR_LOGIN_SERVER/frontend:latest"
+    echo ""
+    echo -e "${BLUE}========================================${NC}"
 }
 
 main() {
@@ -100,7 +100,7 @@ main() {
     push_backend
     build_frontend
     push_frontend
-    list_images
+    print_summary
 
     log_success "All tasks completed successfully!"
 }

@@ -1,15 +1,17 @@
-# set -e  # Exit on error
-set -u  # Exit on undefined variable
+set -e 
+set -u 
 
 PROJECT_NAME="mindx"
 ENVIRONMENT="onboarding"
 LOCATION="eastus"
 
-if az group show --name "mindx-hieunh01-rg" &> /dev/null; then
-    RESOURCE_GROUP="mindx-hieunh01-rg"
+if [ -f ../.env ]; then
+    source ../.env
 else
-    RESOURCE_GROUP="${PROJECT_NAME}-${ENVIRONMENT}-rg"
+    log_error ".env file not found!"
+    exit 1
 fi
+
 ACR_NAME="${PROJECT_NAME}${ENVIRONMENT}acr" 
 AKS_NAME="${PROJECT_NAME}-${ENVIRONMENT}-aks"
 AKS_NODE_COUNT=2
@@ -19,7 +21,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m' 
 
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -59,10 +61,6 @@ check_azure_login() {
     log_info "Subscription: $SUBSCRIPTION_NAME ($SUBSCRIPTION_ID)"
 }
 
-# =============================================================================
-# MAIN SETUP FUNCTIONS
-# =============================================================================
-
 create_resource_group() {
     log_info "Creating Resource Group: $RESOURCE_GROUP in $LOCATION..."
     
@@ -92,11 +90,9 @@ create_acr() {
         log_success "ACR created successfully"
     fi
     
-    # Get ACR login server
     ACR_LOGIN_SERVER=$(az acr show --name "$ACR_NAME" --resource-group "$RESOURCE_GROUP" --query loginServer -o tsv)
     log_info "ACR Login Server: $ACR_LOGIN_SERVER"
     
-    # Enable admin user for easier authentication (for development)
     log_info "Enabling ACR admin user..."
     az acr update --name "$ACR_NAME" --admin-enabled true
     log_success "ACR admin user enabled"
@@ -135,7 +131,6 @@ get_aks_credentials() {
     
     log_success "kubectl configured successfully"
     
-    # Verify connection
     log_info "Verifying AKS connection..."
     kubectl cluster-info
     kubectl get nodes
@@ -156,10 +151,6 @@ print_summary() {
     echo "================================================="
     echo ""
 }
-
-# =============================================================================
-# MAIN EXECUTION
-# =============================================================================
 
 main() {
     check_azure_cli

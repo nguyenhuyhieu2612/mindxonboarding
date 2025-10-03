@@ -1,6 +1,5 @@
 set -e
 
-# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -90,6 +89,11 @@ print_summary() {
 }
 
 main() {
+    echo -e "${BLUE}=========================================================================${NC}"
+    echo -e "${BLUE}          Setting Up Nginx Ingress Controller          ${NC}"
+    echo -e "${BLUE}=========================================================================${NC}"
+    echo ""
+
     add_helm_repos
     install_nginx_ingress
     print_summary

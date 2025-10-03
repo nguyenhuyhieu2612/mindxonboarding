@@ -1,6 +1,5 @@
-# set -e
+set -e
 
-# Colors
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
@@ -21,11 +20,6 @@ log_warning() {
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
-
-echo -e "${BLUE}=========================================================================${NC}"
-echo -e "${BLUE}          Deploying MindX Application to Kubernetes${NC}"
-echo -e "${BLUE}=========================================================================${NC}"
-echo ""
 
 cd ../k8s
 
@@ -100,6 +94,11 @@ print_summary() {
 }
 
 main() {
+    echo -e "${BLUE}=========================================================================${NC}"
+    echo -e "${BLUE}          Deploying MindX Application to Kubernetes${NC}"
+    echo -e "${BLUE}=========================================================================${NC}"
+    echo ""
+
     check_kubectl
     create_namespace
     create_secret
