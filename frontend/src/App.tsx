@@ -7,8 +7,8 @@ export default function App() {
   window.alert("Sau khi thêm CICD Pipline");
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col bg-slate-50 group/design-root overflow-x-hidden">
-      <h1>Sau khi thêm CICI Pipeline</h1> ## New line added for CI/CD pipeline
-      integration
+      <h1>Đây là thông báo sau khi thêm CICI Pipeline</h1> ## New line added for
+      CI/CD pipeline integration
       <MainLayout>
         <Login />
       </MainLayout>

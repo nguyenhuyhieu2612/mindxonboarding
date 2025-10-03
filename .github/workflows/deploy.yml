@@ -8,6 +8,7 @@ env:
   ACR_NAME: ${{ secrets.ACR_NAME }}
   AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
   AKS_RESOURCE_GROUP: ${{ secrets.AKS_RESOURCE_GROUP }}
+  CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   NAMESPACE: mindx-app
   BACKEND_DEPLOYMENT: backend
   FRONTEND_DEPLOYMENT: frontend
