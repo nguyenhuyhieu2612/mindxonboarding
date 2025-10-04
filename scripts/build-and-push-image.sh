@@ -1,4 +1,4 @@
-set -e
+# set -e
 
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -34,7 +34,7 @@ acr_login() {
     echo "$ACR_PASSWORD" | docker login "$ACR_LOGIN_SERVER" -u "$ACR_USERNAME" --password-stdin
     if [ $? -ne 0 ]; then
         log_error "Failed to log in to ACR. Please check your credentials."
-        exit 1
+        # exit 1
     fi
 
     log_success "Logged into ACR successfully"

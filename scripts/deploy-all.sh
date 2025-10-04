@@ -1,4 +1,4 @@
-# set -e
+set -e
 
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -125,13 +125,13 @@ main() {
 
     check_kubectl
     create_namespace
-    # create_backend_secret
-    # create_backend_configmap
-    # deploy_backend
-    # create_frontend_configmap
-    # deploy_frontend
-    # deploy_ingress
-    # print_summary
+    create_backend_secret
+    create_backend_configmap
+    deploy_backend
+    create_frontend_configmap
+    deploy_frontend
+    deploy_ingress
+    print_summary
 }
 
 main
