@@ -5,7 +5,7 @@ metadata:
   namespace: mindx-app
 data:
   NODE_ENV: "development"
-  PORT: "8000"
+  PORT: "3000"
 
   # OpenID Connect
   OIDC_ISSUER: "https://id.mindx.edu.vn"
