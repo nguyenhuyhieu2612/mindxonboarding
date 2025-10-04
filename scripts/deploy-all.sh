@@ -44,22 +44,46 @@ create_namespace() {
     log_success "Namespace created"
 }
 
-create_secret() {
-    log_info "Creating Docker registry secret..."
+create_backend_secret() {
+    log_info "Creating backend secret..."
 
-    if kubectl get secret regcred -n mindx-app &> /dev/null; then
-        log_warning "Secret 'regcred' already exists in namespace 'mindx-app'. Skipping creation."
+    if kubectl get secret backend-secret -n mindx-app &> /dev/null; then
+        log_warning "Secret 'backend-secret' already exists in namespace 'mindx-app'. Skipping creation."
         return
     fi
 
-    kubectl apply -f secrets.yaml
-    log_success "Secret created"
+    kubectl apply -f backend-secret.yaml -n mindx-app
+    log_success "Backend secret created"
+}
+
+create_backend_configmap() {
+    log_info "Creating backend configmap..."
+
+    if kubectl get configmap backend-config -n mindx-app &> /dev/null; then
+        log_warning "ConfigMap 'backend-config' already exists in namespace 'mindx-app'. Skipping creation."
+        return
+    fi
+
+    kubectl apply -f backend-configmap.yaml -n mindx-app
+    log_success "Backend configmap created"
 }
 
 deploy_backend() {
     log_info "Deploying backend..."
     kubectl apply -f backend-deployment.yaml
     log_success "Backend deployed"
+}
+
+create_frontend_configmap() {
+    log_info "Creating frontend configmap..."
+
+    if kubectl get configmap frontend-config -n mindx-app &> /dev/null; then
+        log_warning "ConfigMap 'frontend-config' already exists in namespace 'mindx-app'. Skipping creation."
+        return
+    fi
+
+    kubectl apply -f frontend-configmap.yaml -n mindx-app
+    log_success "Backend configmap created"
 }
 
 deploy_frontend() {

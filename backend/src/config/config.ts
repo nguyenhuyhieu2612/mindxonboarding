@@ -30,7 +30,7 @@ const envSchema = z.object({
   OIDC_SCOPE: z.string().min(1, "OIDC_SCOPE is required"),
   OIDC_RESPONSE_TYPE: z.string().min(1, "OIDC_RESPONSE_TYPE is required"),
 
-  FRONTEND_URL: z.string().url().default("http://localhost:3000"),
+  FRONTEND_URL: z.string().default("http://localhost:5173"),
 
   REDIS_HOST: z.string().min(1, "REDIS_HOST is required"),
   REDIS_PORT: z.coerce.number().default(6379),
