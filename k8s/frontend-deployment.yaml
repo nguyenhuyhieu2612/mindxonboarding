@@ -19,8 +19,10 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: mindxonboardingacr.azurecr.io/frontend:latest
+          image: mindxonboardingacr.azurecr.io/frontend:latest ## Uncomment this line to use ACR
           imagePullPolicy: Always
+          # image: mindx-frontend:latest
+          # imagePullPolicy: Never
           ports:
             - containerPort: 5173
               name: http

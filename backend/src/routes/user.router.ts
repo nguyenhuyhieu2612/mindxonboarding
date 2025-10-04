@@ -1,7 +1,7 @@
 import { Router, Response } from "express";
 import { handleAsyncError } from "../utils/async";
-import { HTTP_STATUS } from "config/contants";
-import { returnSuccess } from "utils/formatter";
+import { HTTP_STATUS } from "../config/contants";
+import { returnSuccess } from "../utils/formatter";
 import { authenticate } from "../middleware/auth";
 const router = Router();
 

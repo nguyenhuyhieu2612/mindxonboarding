@@ -1,6 +1,3 @@
-// import { useAuth } from "@/hooks/use-auth";
-import { useNavigate } from "react-router-dom";
-import { paths } from "@/constants";
 import useLogout from "@/hooks/use-logout";
 import { useAppSelector } from "@/store/hooks";
 

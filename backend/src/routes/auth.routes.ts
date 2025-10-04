@@ -5,8 +5,8 @@ import { APP_CONFIG } from "../config/config";
 import { handleAsyncError } from "../utils/async";
 import { logger } from "../utils/logger";
 import { authenticate, AuthRequest } from "../middleware/auth";
-import { HTTP_STATUS } from "config/contants";
-import { returnError, returnSuccess } from "utils/formatter";
+import { HTTP_STATUS } from "../config/contants";
+import { returnError, returnSuccess } from "../utils/formatter";
 
 const router = Router();
 

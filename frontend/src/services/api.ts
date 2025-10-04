@@ -8,9 +8,8 @@ import { refreshToken } from "./auth";
 import { store } from "@/store";
 import { logoutAccount, setAccessToken } from "@/store/auth.slice";
 
-export const API_BASE_URL = import.meta.env.DEV
-  ? "http://localhost:3000"
-  : "/api";
+export const API_BASE_URL =
+  (import.meta as any).env?.DEV === true ? "http://localhost:3000" : "/api";
 
 const defaultParams: CreateAxiosDefaults = {
   baseURL: API_BASE_URL,
@@ -74,7 +73,7 @@ axiosInstance.interceptors.response.use(
         store.dispatch(logoutAccount());
         window.location.href = "/login";
         return Promise.reject(
-          error.response?.data?.message || "An unknow error occurred"
+          (error as any).response.data?.message || "An unknow error occurred"
         );
       }
     }
