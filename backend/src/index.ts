@@ -4,6 +4,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import compression from "compression";
+import cookieParser from "cookie-parser";
 import { APP_CONFIG } from "./config/config";
 import { logger } from "./utils/logger";
 import router from "./routes";
@@ -13,18 +14,22 @@ dotenv.config();
 const app = express();
 const PORT = APP_CONFIG.app.port;
 
-// Configure helmet with relaxed CSP for OAuth callback
 app.use(
   helmet({
-    contentSecurityPolicy: false, // Disable default CSP, we'll set it per-route
+    contentSecurityPolicy: false,
   })
 );
-app.use(cors());
+app.use(
+  cors({
+    origin: APP_CONFIG.cors.origin,
+    methods: APP_CONFIG.cors.methods,
+    credentials: APP_CONFIG.cors.credentials,
+  })
+);
 app.use(express.json());
 app.use(morgan("combined"));
 app.use(compression());
-
-// Health check endpoint (no auth required)
+app.use(cookieParser());
 
 app.use(router);
 

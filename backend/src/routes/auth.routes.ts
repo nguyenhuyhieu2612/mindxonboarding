@@ -4,6 +4,9 @@ import { tokenService } from "../services/token.services";
 import { APP_CONFIG } from "../config/config";
 import { handleAsyncError } from "../utils/async";
 import { logger } from "../utils/logger";
+import { authenticate, AuthRequest } from "../middleware/auth";
+import { HTTP_STATUS } from "config/contants";
+import { returnError, returnSuccess } from "utils/formatter";
 
 const router = Router();
 
@@ -21,55 +24,24 @@ router.get(
   })
 );
 
-router.get("/callback", async (req: Request, res: Response) => {
-  try {
-    const { code, state, error, error_description } = req.query;
+router.get(
+  "/callback",
+  handleAsyncError(async (req: Request, res: Response) => {
+    try {
+      const { code, state, error, error_description } = req.query;
 
-    if (error) {
-      logger.error("OAuth provider returned error", {
-        error,
-        description: error_description,
-      });
-
-      const oauthError = {
-        type: "OAUTH_ERROR",
-        error:
-          (error_description as string) ||
-          (error as string) ||
-          "Authentication failed",
-      };
-
-      const encodedError = encodeURIComponent(JSON.stringify(oauthError));
-      return res.redirect(
-        `${APP_CONFIG.cors.frontendURL}#oauth_result=${encodedError}`
-      );
-    }
-
-    if (!code || typeof code !== "string") {
-      logger.error("OAuth callback missing code parameter");
-
-      const oauthError = {
-        type: "OAUTH_ERROR",
-        error: "Missing authorization code",
-      };
-
-      const encodedError = encodeURIComponent(JSON.stringify(oauthError));
-      return res.redirect(
-        `${APP_CONFIG.cors.frontendURL}#oauth_result=${encodedError}`
-      );
-    }
-
-    if (req.session && (req.session as any).authState) {
-      const sessionState = (req.session as any).authState;
-      if (state !== sessionState) {
-        logger.error("OAuth state mismatch - possible CSRF attack", {
-          expected: sessionState,
-          received: state,
+      if (error) {
+        logger.error("OAuth provider returned error", {
+          error,
+          description: error_description,
         });
 
         const oauthError = {
           type: "OAUTH_ERROR",
-          error: "Invalid state parameter - possible CSRF attack",
+          error:
+            (error_description as string) ||
+            (error as string) ||
+            "Authentication failed",
         };
 
         const encodedError = encodeURIComponent(JSON.stringify(oauthError));
@@ -77,67 +49,144 @@ router.get("/callback", async (req: Request, res: Response) => {
           `${APP_CONFIG.cors.frontendURL}#oauth_result=${encodedError}`
         );
       }
-      delete (req.session as any).authState;
-    }
 
-    const tokens = await authService.exchangeCodeForTokens(code);
+      if (!code || typeof code !== "string") {
+        logger.error("OAuth callback missing code parameter");
 
-    let userInfo;
-    try {
-      userInfo = await authService.getUserInfo(
-        tokens.access_token,
-        "access_token"
+        const oauthError = {
+          type: "OAUTH_ERROR",
+          error: "Missing authorization code",
+        };
+
+        const encodedError = encodeURIComponent(JSON.stringify(oauthError));
+        return res.redirect(
+          `${APP_CONFIG.cors.frontendURL}#oauth_result=${encodedError}`
+        );
+      }
+
+      if (req.session && (req.session as any).authState) {
+        const sessionState = (req.session as any).authState;
+        if (state !== sessionState) {
+          logger.error("OAuth state mismatch - possible CSRF attack", {
+            expected: sessionState,
+            received: state,
+          });
+
+          const oauthError = {
+            type: "OAUTH_ERROR",
+            error: "Invalid state parameter - possible CSRF attack",
+          };
+
+          const encodedError = encodeURIComponent(JSON.stringify(oauthError));
+          return res.redirect(
+            `${APP_CONFIG.cors.frontendURL}#oauth_result=${encodedError}`
+          );
+        }
+        delete (req.session as any).authState;
+      }
+
+      const tokens = await authService.exchangeCodeForTokens(code);
+
+      const userInfo = await authService.decodeIDToken(tokens.id_token);
+
+      const { accessToken, refreshToken } =
+        await tokenService.generateAccessTokenAndRefreshToken(userInfo.userId);
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: APP_CONFIG.app.environment === "production",
+        sameSite: "lax",
+        maxAge: APP_CONFIG.session.refreshTokenExpiresIn * 1000,
+      });
+
+      logger.info("User authenticated successfully", {
+        userId: userInfo.userId,
+        isTemporary: userInfo._isTemporary || false,
+      });
+
+      const oauthResult = {
+        type: "OAUTH_SUCCESS",
+        payload: {
+          accessToken,
+          user: userInfo,
+        },
+      };
+
+      const encodedResult = encodeURIComponent(JSON.stringify(oauthResult));
+      const redirectUrl = `${APP_CONFIG.cors.frontendURL}/login/#oauth_result=${encodedResult}`;
+
+      logger.info("Redirecting user to frontend", {
+        frontendUrl: APP_CONFIG.cors.frontendURL,
+      });
+
+      res.redirect(redirectUrl);
+    } catch (error: any) {
+      logger.error("Error in OAuth callback", {
+        error: error.message,
+        stack: error.stack,
+      });
+
+      const oauthError = {
+        type: "OAUTH_ERROR",
+        error: error.message || "Authentication failed",
+      };
+
+      const encodedError = encodeURIComponent(JSON.stringify(oauthError));
+      res.redirect(
+        `${APP_CONFIG.cors.frontendURL}#oauth_result=${encodedError}`
       );
-    } catch (error) {
-      logger.warn("UserInfo endpoint failed, falling back to ID token decode");
-      userInfo = await authService.decodeIDToken(tokens.id_token);
     }
+  })
+);
 
-    const { accessToken, refreshToken } =
-      await tokenService.generateAccessTokenAndRefreshToken(userInfo.sub);
+router.post(
+  "/logout",
+  authenticate,
+  handleAsyncError(async (req: AuthRequest, res: Response) => {
+    const { refreshToken } = req.cookies;
 
-    res.cookie("refreshToken", refreshToken, {
+    res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: APP_CONFIG.app.environment === "production",
       sameSite: "lax",
-      maxAge: APP_CONFIG.session.refreshTokenExpiresIn * 1000,
     });
 
-    logger.info("User authenticated successfully", {
-      userId: userInfo.sub,
-      isTemporary: userInfo._isTemporary || false,
-    });
+    if (refreshToken) {
+      await tokenService.revokeRefreshToken(refreshToken);
+    }
 
-    const oauthResult = {
-      type: "OAUTH_SUCCESS",
-      payload: {
-        accessToken,
-        user: userInfo,
-      },
-    };
+    return res
+      .status(HTTP_STATUS.OK)
+      .json(returnSuccess("Logout successful.", null));
+  })
+);
 
-    const encodedResult = encodeURIComponent(JSON.stringify(oauthResult));
-    const redirectUrl = `${APP_CONFIG.cors.frontendURL}/login/#oauth_result=${encodedResult}`;
+router.post(
+  "/refresh-token",
+  handleAsyncError(async (req: Request, res: Response) => {
+    const { refreshToken } = req.cookies;
 
-    logger.info("Redirecting user to frontend", {
-      frontendUrl: APP_CONFIG.cors.frontendURL,
-    });
+    if (!refreshToken) {
+      return res
+        .status(HTTP_STATUS.UNAUTHORIZED)
+        .json(returnError("Refresh token is missing."));
+    }
 
-    res.redirect(redirectUrl);
-  } catch (error: any) {
-    logger.error("Error in OAuth callback", {
-      error: error.message,
-      stack: error.stack,
-    });
+    try {
+      const { userId } = await tokenService.verifyRefreshToken(refreshToken);
+      const accessToken = tokenService.generateAccessToken({ userId });
 
-    const oauthError = {
-      type: "OAUTH_ERROR",
-      error: error.message || "Authentication failed",
-    };
-
-    const encodedError = encodeURIComponent(JSON.stringify(oauthError));
-    res.redirect(`${APP_CONFIG.cors.frontendURL}#oauth_result=${encodedError}`);
-  }
-});
+      return res
+        .status(HTTP_STATUS.OK)
+        .json(returnSuccess("Token refreshed.", accessToken));
+    } catch (err) {
+      console.log("err", err);
+      res.clearCookie("rt");
+      return res
+        .status(HTTP_STATUS.UNAUTHORIZED)
+        .json(returnError("Invalid or expired refresh token."));
+    }
+  })
+);
 
 export default router;

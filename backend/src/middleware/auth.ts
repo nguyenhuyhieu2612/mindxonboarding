@@ -1,32 +1,42 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { APP_CONFIG } from "../config/config";
-import { logger } from "../utils/logger";
+import { tokenService } from "../services/token.services";
+import { HTTP_STATUS } from "config/contants";
+import { returnError } from "utils/formatter";
 
 export interface AuthRequest extends Request {
   user?: any;
+  token?: string;
 }
 
-export const authenticateToken = (
+export const authenticate = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+  const headerAuth = req.headers.authorization;
 
-  if (!token) {
-    logger.warn("Access attempt without token");
-    return res.status(401).json({ error: "Access token required" });
+  if (!headerAuth || !headerAuth.startsWith("Bearer ")) {
+    return res
+      .status(HTTP_STATUS.UNAUTHORIZED)
+      .json(returnError("Please log in to access this resource"));
   }
 
-  jwt.verify(token, APP_CONFIG.session.accessTokenSecret, (err: any, user: any) => {
-    if (err) {
-      logger.warn("Invalid token attempt", { error: err.message });
-      return res.status(403).json({ error: "Invalid or expired token" });
-    }
-    req.user = user;
-    logger.debug("Token verified successfully", { userId: user.userId });
-    next();
-  });
+  const token = headerAuth.split(" ")[1];
+
+  if (!token) {
+    return res
+      .status(HTTP_STATUS.UNAUTHORIZED)
+      .json(returnError("Please log in to access this resource"));
+  }
+
+  const decoded = await tokenService.verifyAccessToken(token);
+
+  if (!decoded) {
+    return res
+      .status(HTTP_STATUS.UNAUTHORIZED)
+      .json(returnError("User does not exist"));
+  }
+
+  req.user = { userId: decoded.userId };
+  next();
 };

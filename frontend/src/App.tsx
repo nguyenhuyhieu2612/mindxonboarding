@@ -4,6 +4,7 @@ import useApiHealth from "@/hooks/use-api-health";
 import { Route, Routes } from "react-router-dom";
 import { paths } from "./constants";
 import Home from "@/screens/home";
+import PrivateRoute from "./components/protected-route";
 
 export default function App() {
   useApiHealth();
@@ -13,7 +14,9 @@ export default function App() {
       <Routes>
         <Route element={<MainLayout />}>
           <Route path={paths.login} element={<Login />} />
-          <Route path={paths.home} element={<Home />} />
+          <Route element={<PrivateRoute />}>
+            <Route path={paths.home} element={<Home />} />
+          </Route>
         </Route>
       </Routes>
     </div>

@@ -1,5 +1,5 @@
 import React from "react";
-import { apiClient } from "@services/api";
+import { getHealth } from "@services/auth";
 
 export default function useApiHealth() {
   const [isHealthy, setIsHealthy] = React.useState<boolean | null>(null);
@@ -11,10 +11,10 @@ export default function useApiHealth() {
     setError(null);
     setIsHealthy(null);
     try {
-      const health = await apiClient.getHealth();
-      setIsHealthy(health.status === "healthy");
-    } catch (err: any) {
-      setError(err.message || "Unknown error");
+      const response = await getHealth();
+      setIsHealthy(response.data?.status === "healthy");
+    } catch (err) {
+      setError(err as string);
       setIsHealthy(false);
     } finally {
       setLoading(false);
@@ -27,7 +27,7 @@ export default function useApiHealth() {
 
   React.useEffect(() => {
     if (isHealthy === true) {
-      window.alert("API is healthy");
+      console.log("API is healthy");
     }
   }, [isHealthy]);
 

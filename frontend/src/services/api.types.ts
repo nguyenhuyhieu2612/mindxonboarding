@@ -1,25 +1,16 @@
-export interface ApiResponse {
+export interface QueueItem {
+  resolve: (value: string | undefined) => void;
+  reject: (reason?: any) => void;
+}
+
+export type ApiResponse<T = null> = {
+  success: boolean;
   message: string;
-  version: string;
-  step: string;
-  timestamp: string;
-  environment: string;
-}
-
-export interface HealthStatus {
-  status: string;
-  uptime: number;
-  timestamp: string;
-  environment: string;
-}
-
-export interface ApiInfo {
-  name: string;
-  description: string;
-  endpoints: {
-    root: string;
-    health: string;
-    info: string;
+  data?: T;
+  meta?: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    limit: number;
   };
-  documentation?: string;
-}
+};

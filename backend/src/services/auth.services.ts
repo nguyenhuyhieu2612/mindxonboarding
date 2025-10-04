@@ -63,32 +63,7 @@ class AuthService {
   }
 
   private async callUserInfoEndpoint(token: string): Promise<any> {
-    try {
-      logger.info("Calling UserInfo endpoint with token");
-      const response = await axios.get(APP_CONFIG.openid.userInfoEndpoint, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        timeout: 10000,
-      });
-
-      const data = response.data;
-      logger.info("UserInfo response:", data);
-
-      return {
-        sub: data.sub,
-        email: data.email || "",
-        name: data.name || data.given_name || data.family_name || "",
-        picture: data.picture || "",
-        email_verified: data.email_verified || false,
-      };
-    } catch (error: any) {
-      logger.error("Error calling UserInfo endpoint:", {
-        error: error.response?.data || error.message,
-        status: error.response?.status,
-      });
-      throw new Error("Failed to fetch user info from UserInfo endpoint");
-    }
+    // do something
   }
 
   decodeIDToken(idToken: string): any {
@@ -99,42 +74,13 @@ class AuthService {
         throw new Error("Invalid ID token");
       }
 
-      logger.info("Decoded ID token (full):", decoded);
-      logger.info("Available claims:", Object.keys(decoded));
-
-      const hasProfileClaims = decoded.email || decoded.name;
-
-      if (!hasProfileClaims) {
-        logger.warn(
-          "Profile claims missing, generating temporary profile from sub"
-        );
-        return this.generateTemporaryProfile(decoded.sub!);
-      }
-
       return {
-        sub: decoded.sub,
-        email: decoded.email || "",
-        name: decoded.name || decoded.given_name || "",
-        picture: decoded.picture || "",
-        email_verified: decoded.email_verified || false,
+        userId: decoded.sub,
       };
     } catch (error) {
       logger.error("Error decoding ID token:", error);
       throw new Error("Failed to decode ID token");
     }
-  }
-
-  private generateTemporaryProfile(sub: string): any {
-    const shortId = sub.substring(0, 8);
-
-    return {
-      sub: sub,
-      email: `user-${shortId}@temp.mindx.local`,
-      name: `User ${shortId}`,
-      picture: `https://ui-avatars.com/api/?name=User+${shortId}&background=667eea&color=fff`,
-      email_verified: false,
-      _isTemporary: true,
-    };
   }
 }
 

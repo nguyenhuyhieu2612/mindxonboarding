@@ -1,18 +1,7 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import useMindXLogin from "@/hooks/use-mindx-login";
-import { paths } from "@/constants";
+import useMindXLogin from "@hooks/use-mindx-login";
 
 export default function Login() {
-  const { error, data, actions } = useMindXLogin();
-  const navigate = useNavigate();
-
-  React.useEffect(() => {
-    if (data && data.accessToken) {
-      console.log("data", data);
-      navigate(paths.home);
-    }
-  }, [data]);
+  const { actions, error } = useMindXLogin();
 
   return (
     <div className="px-40 flex flex-1 justify-center py-5">
@@ -28,7 +17,7 @@ export default function Login() {
         <div className="flex justify-center">
           <div className="flex flex-1 gap-3 max-w-[480px] flex-col items-stretch px-4 py-3">
             <button
-              onClick={actions.handleLogin}
+              onClick={actions.handleMindXLogin}
               className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#ec1313] text-[#fcf8f8] text-base font-bold leading-normal tracking-[0.015em] w-full"
             >
               <span className="truncate">Sign in with MindX account</span>

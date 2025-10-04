@@ -1,10 +1,40 @@
 import React from "react";
 import { API_BASE_URL } from "@/services/api";
+import { setCredentials } from "@/store/auth.slice";
+import { useAppDispatch } from "@/store/hooks";
+import { useNavigate } from "react-router-dom";
+import { paths } from "@/constants";
 
 export default function useMindXLogin() {
-  const [isLoading, setIsLoading] = React.useState(false);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [data, setData] = React.useState<any>(null);
+
+  const handleMindXLogin = React.useCallback(() => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const returnUrl = window.location.pathname + window.location.search;
+      sessionStorage.setItem("oauth_return_url", returnUrl);
+
+      const state = Math.random().toString(36).substring(7);
+      sessionStorage.setItem("oauth_state", state);
+
+      console.log("Initiating OAuth redirect flow with state:", state);
+
+      window.location.href = `${API_BASE_URL}/auth/mindx`;
+    } catch (error) {
+      console.error("Error initiating login:", error);
+      setLoading(false);
+      setError("Failed to initiate authentication");
+      sessionStorage.removeItem("oauth_state");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   React.useEffect(() => {
     const checkOAuthCallback = () => {
@@ -22,11 +52,16 @@ export default function useMindXLogin() {
         const result = JSON.parse(decodeURIComponent(resultStr));
 
         if (result.type === "OAUTH_SUCCESS") {
-          console.log("OAuth authentication successful");
-          setData(result.payload);
+          console.log("OAuth authentication successful", result);
 
           if (result.payload.accessToken) {
-            localStorage.setItem("accessToken", result.payload.accessToken);
+            dispatch(
+              setCredentials({
+                accessToken: result.payload.accessToken,
+                user: result.payload.user,
+              })
+            );
+            navigate(paths.home);
           }
         } else if (result.type === "OAUTH_ERROR") {
           console.error("OAuth authentication failed:", result.error);
@@ -39,13 +74,12 @@ export default function useMindXLogin() {
           window.location.pathname + window.location.search
         );
 
-        setIsLoading(false);
+        setLoading(false);
 
         sessionStorage.removeItem("oauth_state");
       } catch (err) {
         console.error("Error parsing OAuth callback:", err);
         setError("Failed to process authentication response");
-        setIsLoading(false);
         sessionStorage.removeItem("oauth_state");
       }
     };
@@ -53,34 +87,18 @@ export default function useMindXLogin() {
     const oauthState = sessionStorage.getItem("oauth_state");
     if (oauthState) {
       console.log("OAuth flow in progress, checking for callback...");
-      setIsLoading(true);
+      setLoading(true);
       checkOAuthCallback();
     } else {
       checkOAuthCallback();
     }
-  }, []);
+  }, [dispatch]);
 
-  const handleLogin = React.useCallback(() => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const returnUrl = window.location.pathname + window.location.search;
-      sessionStorage.setItem("oauth_return_url", returnUrl);
-
-      const state = Math.random().toString(36).substring(7);
-      sessionStorage.setItem("oauth_state", state);
-
-      console.log("Initiating OAuth redirect flow with state:", state);
-
-      window.location.href = `${API_BASE_URL}/auth/mindx`;
-    } catch (err) {
-      console.error("Error initiating login:", err);
-      setIsLoading(false);
-      setError("Failed to initiate authentication");
-      sessionStorage.removeItem("oauth_state");
-    }
-  }, []);
-
-  return { isLoading, error, data, actions: { handleLogin } };
+  return {
+    loading,
+    error,
+    actions: {
+      handleMindXLogin,
+    },
+  };
 }

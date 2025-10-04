@@ -1,4 +1,4 @@
-import { getRefreshTokenKey } from "utils/key";
+import { getRefreshTokenKey } from "../utils/key";
 import { APP_CONFIG } from "../config/config";
 import redis from "../config/redis-client";
 import jwt from "jsonwebtoken";
@@ -18,7 +18,7 @@ class TokenService {
         APP_CONFIG.session.accessTokenSecret,
         (err, decoded) => {
           if (err) {
-            return reject(err);
+            return reject(null);
           }
           resolve(decoded);
         }
@@ -67,6 +67,27 @@ class TokenService {
     const refreshToken = this.generateRefreshToken(payload);
     await this.saveRefreshToken(userId, refreshToken);
     return { accessToken, refreshToken };
+  }
+
+  async blacklistAccessToken(token: string): Promise<void> {
+    try {
+      const decoded = await this.verifyAccessToken(token);
+      const key = `blacklist:${token}`;
+      const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
+
+      if (expiresIn > 0) {
+        await redis.set(key, "1");
+        await redis.expire(key, expiresIn);
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async isTokenBlacklisted(token: string): Promise<boolean> {
+    const key = `blacklist:${token}`;
+    const result = await redis.get(key);
+    return result !== null;
   }
 }
 
