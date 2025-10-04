@@ -1,4 +1,6 @@
+import { getRefreshTokenKey } from "utils/key";
 import { APP_CONFIG } from "../config/config";
+import redis from "../config/redis-client";
 import jwt from "jsonwebtoken";
 
 class TokenService {
@@ -46,22 +48,24 @@ class TokenService {
     });
   }
 
-  saveRefreshToken(userId: string, refreshToken: string): void {
-    // Implement saving refresh token to database or in-memory store
+  async saveRefreshToken(userId: string, refreshToken: string): Promise<void> {
+    const key = getRefreshTokenKey(refreshToken);
+    await redis.hset(key, { userId });
+    await redis.expire(key, APP_CONFIG.session.refreshTokenExpiresIn);
   }
 
-  revokeRefreshToken(userId: string): void {
-    // Implement revoking refresh token from database or in-memory store
+  async revokeRefreshToken(refreshToken: string): Promise<void> {
+    await redis.del(getRefreshTokenKey(refreshToken));
   }
 
-  generateAccessTokenAndRefreshToken(userId: string): {
+  async generateAccessTokenAndRefreshToken(userId: string): Promise<{
     accessToken: string;
     refreshToken: string;
-  } {
+  }> {
     const payload = { userId };
     const accessToken = this.generateAccessToken(payload);
     const refreshToken = this.generateRefreshToken(payload);
-    this.saveRefreshToken(userId, refreshToken);
+    await this.saveRefreshToken(userId, refreshToken);
     return { accessToken, refreshToken };
   }
 }

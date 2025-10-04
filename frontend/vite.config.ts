@@ -6,7 +6,6 @@ import url from "url";
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -14,8 +13,9 @@ export default defineConfig({
     host: true,
     proxy: {
       "/api": {
-        target: process.env.VITE_API_URL || "http://localhost:3000",
+        target: "http://localhost:3000",
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
   },

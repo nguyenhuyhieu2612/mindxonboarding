@@ -13,7 +13,12 @@ dotenv.config();
 const app = express();
 const PORT = APP_CONFIG.app.port;
 
-app.use(helmet());
+// Configure helmet with relaxed CSP for OAuth callback
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Disable default CSP, we'll set it per-route
+  })
+);
 app.use(cors());
 app.use(express.json());
 app.use(morgan("combined"));

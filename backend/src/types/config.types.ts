@@ -38,11 +38,18 @@ type SessionConfig = {
   refreshTokenExpiresIn: number;
 };
 
+type RedisConfig = {
+  host: string;
+  port: number;
+  password: string;
+};
+
 export type Config = {
   app: AppConfig;
   openid: OpenIDConfig;
   jwt: JWTConfig;
   cors: CORSConfig;
   session: SessionConfig;
+  redis: RedisConfig;
 };
 export type { AppConfig, OpenIDConfig, JWTConfig, CORSConfig };

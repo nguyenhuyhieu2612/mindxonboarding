@@ -28,3 +28,7 @@ data:
   ACCESS_TOKEN_EXPIRES_IN: "900"
   REFRESH_TOKEN_EXPIRES_IN: "604800"
   JWT_EXPIRES_IN: "24h"
+
+  # Redis
+  REDIS_HOST: "redis-18224.c292.ap-southeast-1-1.ec2.redns.redis-cloud.com"
+  REDIS_PORT: "18224"

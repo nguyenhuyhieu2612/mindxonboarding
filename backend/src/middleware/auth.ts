@@ -20,7 +20,7 @@ export const authenticateToken = (
     return res.status(401).json({ error: "Access token required" });
   }
 
-  jwt.verify(token, APP_CONFIG.jwt.jwtSecret, (err: any, user: any) => {
+  jwt.verify(token, APP_CONFIG.session.accessTokenSecret, (err: any, user: any) => {
     if (err) {
       logger.warn("Invalid token attempt", { error: err.message });
       return res.status(403).json({ error: "Invalid or expired token" });

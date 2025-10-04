@@ -31,6 +31,10 @@ const envSchema = z.object({
   OIDC_RESPONSE_TYPE: z.string().min(1, "OIDC_RESPONSE_TYPE is required"),
 
   FRONTEND_URL: z.string().url().default("http://localhost:3000"),
+
+  REDIS_HOST: z.string().min(1, "REDIS_HOST is required"),
+  REDIS_PORT: z.coerce.number().default(6379),
+  REDIS_PASSWORD: z.string().optional(),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
@@ -46,7 +50,7 @@ const development: Config = {
   app: {
     name: "MindX Backend API - Development",
     version: "1.0.0",
-    port: 8000,
+    port: ENV.PORT ? parseInt(ENV.PORT) : 3000,
     environment: "development",
   },
   jwt: {
@@ -78,13 +82,18 @@ const development: Config = {
     scope: ENV.OIDC_SCOPE,
     responseType: ENV.OIDC_RESPONSE_TYPE,
   },
+  redis: {
+    host: ENV.REDIS_HOST,
+    port: ENV.REDIS_PORT,
+    password: ENV.REDIS_PASSWORD!,
+  },
 };
 
 const production: Config = {
   app: {
     name: "MindX Backend API",
     version: "1.0.0",
-    port: ENV.PORT ? parseInt(ENV.PORT) : 8000,
+    port: ENV.PORT ? parseInt(ENV.PORT) : 3000,
     environment: "production",
   },
   jwt: {
@@ -115,6 +124,11 @@ const production: Config = {
     callbackURL: ENV.OIDC_REDIRECT_URI,
     scope: ENV.OIDC_SCOPE,
     responseType: ENV.OIDC_RESPONSE_TYPE,
+  },
+  redis: {
+    host: ENV.REDIS_HOST,
+    port: ENV.REDIS_PORT,
+    password: ENV.REDIS_PASSWORD!,
   },
 };
 
