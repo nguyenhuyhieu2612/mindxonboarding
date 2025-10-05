@@ -9,8 +9,13 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /$1
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - hieunh01.mindx.edu.vn
+      secretName: mindx-app-tls-secret
   rules:
-    - http:
+    - host: hieunh01.mindx.edu.vn
+      http:
         paths:
           - path: /api/(.*)
             pathType: ImplementationSpecific
@@ -19,8 +24,9 @@ spec:
                 name: backend-service
                 port:
                   number: 3000
+
 ---
-# Frontend Ingress - no path rewrite
+# Frontend Ingress - main site
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -28,8 +34,13 @@ metadata:
   namespace: mindx-app
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - hieunh01.mindx.edu.vn
+      secretName: mindx-app-tls-secret
   rules:
-    - http:
+    - host: hieunh01.mindx.edu.vn
+      http:
         paths:
           - path: /
             pathType: Prefix

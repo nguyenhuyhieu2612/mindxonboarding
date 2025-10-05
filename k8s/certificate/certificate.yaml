@@ -16,6 +16,11 @@ spec:
 
   commonName: hieunh01.mindx.edu.vn
 
+  dnsNames:
+    - hieunh01.mindx.edu.vn
+
+  # Issuer
+
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer

@@ -6,10 +6,17 @@ metadata:
     app: cert-manager
 spec:
   acme:
+    # Let's Encrypt Production Server
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: "hieunh01@mindx.com.vn"
+
+    # Email nhận thông báo chứng chỉ
+    email: hieunh01@mindx.com.vn
+
+    # Secret lưu private key của tài khoản Let's Encrypt
     privateKeySecretRef:
       name: letsencrypt-prod-account-key
+
+    # HTTP-01 challenge sử dụng ingress class nginx
     solvers:
       - http01:
           ingress:
