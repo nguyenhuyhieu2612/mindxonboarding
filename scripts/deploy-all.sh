@@ -1,6 +1,7 @@
 set -e
 
 GREEN='\033[0;32m'
+RED='\033[0;31m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
@@ -20,8 +21,6 @@ log_warning() {
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
-
-cd ../k8s
 
 check_kubectl() {
     if ! command -v kubectl &> /dev/null; then
@@ -123,6 +122,8 @@ main() {
     echo -e "${BLUE}=========================================================================${NC}"
     echo ""
 
+    cd ../k8s
+
     check_kubectl
     create_namespace
     create_backend_secret
@@ -138,4 +139,3 @@ main
 
 echo "🎉 Script finished. Press Enter to exit..."
 read
-

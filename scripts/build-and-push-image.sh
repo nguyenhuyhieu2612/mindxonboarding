@@ -1,4 +1,4 @@
-# set -e
+set -e
 
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -32,7 +32,7 @@ acr_login() {
     log_info "Logging into Azure Container Registry..."
 
     echo "$ACR_PASSWORD" | docker login "$ACR_LOGIN_SERVER" -u "$ACR_USERNAME" --password-stdin
-    if [ $? -ne 0 ]; then
+    if [ "$?" -ne 0 ]; then
         log_error "Failed to log in to ACR. Please check your credentials."
         # exit 1
     fi
@@ -44,7 +44,7 @@ build_backend() {
     log_info "Building backend Docker image..."
 
     cd ../backend
-    docker build -t "$ACR_LOGIN_SERVER/backend:latest" .
+    docker build -t "$ACR_LOGIN_SERVER/backend:latest" -t "$ACR_LOGIN_SERVER/backend:$(date +%Y%m%d-%H%M%S)" .
     docker build -t "$ACR_LOGIN_SERVER/backend:$(date +%Y%m%d-%H%M%S)" .
 
     cd ../scripts
@@ -63,7 +63,7 @@ build_frontend() {
     log_info "Building frontend Docker image..."
 
     cd ../frontend
-    docker build -t "$ACR_LOGIN_SERVER/frontend:latest" .
+    docker build -t "$ACR_LOGIN_SERVER/frontend:latest"  -t "$ACR_LOGIN_SERVER/frontend:$(date +%Y%m%d-%H%M%S)" .
     docker build -t "$ACR_LOGIN_SERVER/frontend:$(date +%Y%m%d-%H%M%S)" .
 
     cd ../scripts

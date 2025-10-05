@@ -99,7 +99,7 @@ main() {
     print_summary
 }
 
-main    
+main
 
 echo "🎉 Script finished. Press Enter to exit..."
 read
