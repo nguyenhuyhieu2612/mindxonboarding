@@ -20,12 +20,32 @@ class AuthService {
 
   async exchangeCodeForTokens(code: string): Promise<TokenResponse> {
     try {
+      logger.info("🔄 Preparing token exchange request", {
+        tokenEndpoint: APP_CONFIG.openid.tokenEndpoint,
+        clientId: APP_CONFIG.openid.clientId,
+        redirectUri: APP_CONFIG.openid.callbackURL,
+        codeLength: code.length,
+        clientSecretPresent: !!APP_CONFIG.openid.clientSecret,
+        clientSecretLength: APP_CONFIG.openid.clientSecret?.length,
+      });
+
       const params = new URLSearchParams({
         grant_type: "authorization_code",
         code,
         redirect_uri: APP_CONFIG.openid.callbackURL,
         client_id: APP_CONFIG.openid.clientId,
         client_secret: APP_CONFIG.openid.clientSecret,
+      });
+
+      logger.info("📤 Sending token exchange request", {
+        url: APP_CONFIG.openid.tokenEndpoint,
+        bodyParams: {
+          grant_type: "authorization_code",
+          code: code.substring(0, 10) + "...",
+          redirect_uri: APP_CONFIG.openid.callbackURL,
+          client_id: APP_CONFIG.openid.clientId,
+          client_secret_first_10: APP_CONFIG.openid.clientSecret.substring(0, 10) + "...",
+        },
       });
 
       const response = await axios.post<TokenResponse>(

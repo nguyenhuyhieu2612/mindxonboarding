@@ -28,16 +28,6 @@ router.get(
   "/callback",
   handleAsyncError(async (req: Request, res: Response) => {
     try {
-      logger.info("🔍 OAuth callback received", {
-        url: req.url,
-        query: req.query,
-        headers: {
-          referer: req.headers.referer,
-          origin: req.headers.origin,
-          userAgent: req.headers["user-agent"],
-        },
-      });
-
       logger.debug("req.query", req.query);
 
       const { code, state, error, error_description } = req.query;
