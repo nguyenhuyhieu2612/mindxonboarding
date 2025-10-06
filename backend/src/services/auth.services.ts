@@ -44,7 +44,8 @@ class AuthService {
           code: code.substring(0, 10) + "...",
           redirect_uri: APP_CONFIG.openid.callbackURL,
           client_id: APP_CONFIG.openid.clientId,
-          client_secret_first_10: APP_CONFIG.openid.clientSecret.substring(0, 10) + "...",
+          client_secret_first_10:
+            APP_CONFIG.openid.clientSecret.substring(0, 10) + "...",
         },
       });
 
@@ -67,6 +68,7 @@ class AuthService {
 
       return response.data;
     } catch (error: any) {
+      logger.error("Error exchanging code for tokens 0: ", error);
       logger.error("Error exchanging code for tokens", {
         error: error.response?.data || error.message,
         status: error.response?.status,
