@@ -1,5 +1,7 @@
 set -e
+set -u
 
+RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
@@ -33,8 +35,8 @@ acr_login() {
 
     echo "$ACR_PASSWORD" | docker login "$ACR_LOGIN_SERVER" -u "$ACR_USERNAME" --password-stdin
     if [ "$?" -ne 0 ]; then
-        log_error "Failed to log in to ACR. Please check your credentials."
-        # exit 1
+        log_error "Failed to log in to ACR. Please check your credentials in the .env file."
+        exit 1
     fi
 
     log_success "Logged into ACR successfully"
@@ -44,8 +46,9 @@ build_backend() {
     log_info "Building backend Docker image..."
 
     cd ../backend
-    docker build -t "$ACR_LOGIN_SERVER/backend:latest" -t "$ACR_LOGIN_SERVER/backend:$(date +%Y%m%d-%H%M%S)" .
-    docker build -t "$ACR_LOGIN_SERVER/backend:$(date +%Y%m%d-%H%M%S)" .
+    TIMESTAMP_TAG=$(date +%Y%m%d-%H%M%S)
+    docker build -t "$ACR_LOGIN_SERVER/backend:latest" -t "$ACR_LOGIN_SERVER/backend:$TIMESTAMP_TAG" .
+    # docker build -t "$ACR_LOGIN_SERVER/backend:$(date +%Y%m%d-%H%M%S)" .
 
     cd ../scripts
     log_success "Backend Docker image built"
@@ -55,6 +58,7 @@ push_backend() {
     log_info "Pushing backend Docker image to ACR..."
 
     docker push "$ACR_LOGIN_SERVER/backend:latest"
+    docker push "$ACR_LOGIN_SERVER/backend:$(date +%Y%m%d-%H%M%S)"
 
     log_success "Backend Docker image pushed to ACR"
 }
@@ -63,8 +67,9 @@ build_frontend() {
     log_info "Building frontend Docker image..."
 
     cd ../frontend
-    docker build -t "$ACR_LOGIN_SERVER/frontend:latest"  -t "$ACR_LOGIN_SERVER/frontend:$(date +%Y%m%d-%H%M%S)" .
-    docker build -t "$ACR_LOGIN_SERVER/frontend:$(date +%Y%m%d-%H%M%S)" .
+    TIMESTAMP_TAG=$(date +%Y%m%d-%H%M%S)
+    docker build -t "$ACR_LOGIN_SERVER/frontend:latest"  -t "$ACR_LOGIN_SERVER/frontend:$TIMESTAMP_TAG" .
+    # docker build -t "$ACR_LOGIN_SERVER/frontend:$(date +%Y%m%d-%H%M%S)" .
 
     cd ../scripts
     log_success "Frontend Docker image built"
@@ -74,6 +79,7 @@ push_frontend() {
     log_info "Pushing frontend Docker image to ACR..."
 
     docker push "$ACR_LOGIN_SERVER/frontend:latest"
+    docker push "$ACR_LOGIN_SERVER/frontend:$(date +%Y%m%d-%H%M%S)"
 
     log_success "Frontend Docker image pushed to ACR"
 }

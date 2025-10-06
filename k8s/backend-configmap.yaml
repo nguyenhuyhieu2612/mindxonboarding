@@ -15,7 +15,7 @@ data:
   OIDC_JWKS_URI: "https://id-dev.mindx.edu.vn/jwks"
 
   # Redirect URI
-  OIDC_REDIRECT_URI: "http://localhost:3000/auth/callback"
+  OIDC_REDIRECT_URI: "https://hieunh01.mindx.edu.vn/api/auth/callback"
 
   # Scope & Flow
   OIDC_SCOPE: "openid profile email"

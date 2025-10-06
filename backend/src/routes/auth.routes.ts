@@ -96,7 +96,13 @@ router.get(
         httpOnly: true,
         secure: APP_CONFIG.app.environment === "production",
         sameSite: "lax",
+        path: "/",
         maxAge: APP_CONFIG.session.refreshTokenExpiresIn * 1000,
+      });
+
+      logger.info("Refresh token cookie set", {
+        secure: APP_CONFIG.app.environment === "production",
+        path: "/",
       });
 
       logger.info("User authenticated successfully", {
@@ -145,10 +151,12 @@ router.post(
   handleAsyncError(async (req: AuthRequest, res: Response) => {
     const { refreshToken } = req.cookies;
 
+    // Clear refresh token cookie (must match set options)
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: APP_CONFIG.app.environment === "production",
       sameSite: "lax",
+      path: "/", // Must match the path used when setting
     });
 
     if (refreshToken) {
@@ -180,8 +188,16 @@ router.post(
         .status(HTTP_STATUS.OK)
         .json(returnSuccess("Token refreshed.", accessToken));
     } catch (err) {
-      console.log("err", err);
-      res.clearCookie("rt");
+      logger.error("Refresh token verification failed", { error: err });
+
+      // Clear invalid refresh token
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: APP_CONFIG.app.environment === "production",
+        sameSite: "lax",
+        path: "/",
+      });
+
       return res
         .status(HTTP_STATUS.UNAUTHORIZED)
         .json(returnError("Invalid or expired refresh token."));

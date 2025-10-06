@@ -1,28 +1,18 @@
-set -e 
-set -u 
+# set -e
+# set -u
 
-PROJECT_NAME="mindx"
-ENVIRONMENT="onboarding"
-LOCATION="eastus"
-
-if [ -f ../.env ]; then
-    source ../.env
-else
-    log_error ".env file not found!"
-    exit 1
-fi
-
-ACR_NAME="${PROJECT_NAME}${ENVIRONMENT}acr" 
-AKS_NAME="${PROJECT_NAME}-${ENVIRONMENT}-aks"
-AKS_NODE_COUNT=2
-AKS_NODE_SIZE="Standard_D2s_v3"
-
+# ==============================================================================
+# COLOR DEFINITIONS
+# ==============================================================================
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' 
 
+# ==============================================================================
+# LOGGING FUNCTIONS
+# ==============================================================================
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -38,6 +28,16 @@ log_warning() {
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
+
+# ==============================================================================
+# LOAD ENVIRONMENT VARIABLES
+# ==============================================================================
+if [ -f ../.env ]; then
+    source ../.env
+else
+    log_error ".env file not found! Please create it from .env.example"
+    exit 1
+fi
 
 check_azure_cli() {
     if ! command -v az &> /dev/null; then
@@ -59,6 +59,19 @@ check_azure_login() {
     SUBSCRIPTION_ID=$(az account show --query id -o tsv)
     log_success "Logged in to Azure"
     log_info "Subscription: $SUBSCRIPTION_NAME ($SUBSCRIPTION_ID)"
+}
+
+install_azure_extensions() {
+    log_info "Checking for required Azure CLI extensions..."
+    
+    # Check for application-insights extension
+    if ! az extension show --name application-insights &> /dev/null; then
+        log_warning "Azure CLI extension 'application-insights' not found. Installing now..."
+        az extension add --name application-insights --yes
+        log_success "Extension 'application-insights' installed."
+    else
+        log_info "Extension 'application-insights' is already installed."
+    fi
 }
 
 create_resource_group() {
@@ -96,6 +109,44 @@ create_acr() {
     log_info "Enabling ACR admin user..."
     az acr update --name "$ACR_NAME" --admin-enabled true
     log_success "ACR admin user enabled"
+}
+
+create_log_analytics_workspace() {
+    log_info "Creating Log Analytics Workspace: $LOG_ANALYTICS_WORKSPACE_NAME..."
+
+    if az monitor log-analytics workspace show --resource-group "$RESOURCE_GROUP" --workspace-name "$LOG_ANALYTICS_WORKSPACE_NAME" &> /dev/null; then
+        log_warning "Log Analytics Workspace '$LOG_ANALYTICS_WORKSPACE_NAME' already exists. Skipping creation."
+    else
+        az monitor log-analytics workspace create \
+            --resource-group "$RESOURCE_GROUP" \
+            --workspace-name "$LOG_ANALYTICS_WORKSPACE_NAME" \
+            --location "$LOCATION" \
+            --sku PerGB2018 \
+            --retention-time 30
+        log_success "Log Analytics Workspace created successfully"
+    fi
+}
+
+create_app_insights() {
+    log_info "Creating Application Insights: $APP_INSIGHTS_NAME..."
+
+    WORKSPACE_ID=$(az monitor log-analytics workspace show \
+        --resource-group "$RESOURCE_GROUP" \
+        --workspace-name "$LOG_ANALYTICS_WORKSPACE_NAME" \
+        --query id -o tsv)
+
+    if az monitor app-insights component show --app "$APP_INSIGHTS_NAME" --resource-group "$RESOURCE_GROUP" &> /dev/null; then
+        log_warning "Application Insights '$APP_INSIGHTS_NAME' already exists. Skipping creation."
+    else
+        az monitor app-insights component create \
+            --app "$APP_INSIGHTS_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --location "$LOCATION" \
+            --workspace "$WORKSPACE_ID" \
+            --application-type web \
+            --kind web
+        log_success "Application Insights created successfully"
+    fi
 }
 
 create_aks() {
@@ -145,6 +196,8 @@ print_summary() {
     echo "ACR Name: $ACR_NAME"
     echo "ACR Login Server: $ACR_LOGIN_SERVER"
     echo "AKS Name: $AKS_NAME"
+    echo "Log Analytics Workspace: $LOG_ANALYTICS_WORKSPACE_NAME"
+    echo "Application Insights: $APP_INSIGHTS_NAME"
     echo "AKS Node Count: $AKS_NODE_COUNT"
     echo "AKS Node Size: $AKS_NODE_SIZE"
     echo ""
@@ -155,7 +208,10 @@ print_summary() {
 main() {
     check_azure_cli
     check_azure_login
+    install_azure_extensions
     create_resource_group
+    create_log_analytics_workspace
+    create_app_insights
     create_acr
     create_aks
     get_aks_credentials
