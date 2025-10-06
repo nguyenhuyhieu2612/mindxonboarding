@@ -4,7 +4,7 @@ metadata:
   name: backend-config
   namespace: mindx-app
 data:
-  NODE_ENV: "development"
+  NODE_ENV: "production"
   PORT: "3000"
 
   # OpenID Connect
@@ -22,7 +22,7 @@ data:
   OIDC_RESPONSE_TYPE: "code"
 
   # CORS
-  FRONTEND_URL: "/"
+  FRONTEND_URL: "https://hieunh01.mindx.edu.vn"
 
   # SESSION & JWT
   ACCESS_TOKEN_EXPIRES_IN: "900"

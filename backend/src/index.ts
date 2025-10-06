@@ -32,17 +32,16 @@ app.use(morgan("combined"));
 app.use(compression());
 app.use(cookieParser());
 
-// Session middleware for CSRF state (OAuth)
 app.use(
   session({
-    secret: APP_CONFIG.session.accessTokenSecret, // Reuse existing secret
+    secret: APP_CONFIG.session.accessTokenSecret,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
       secure: APP_CONFIG.app.environment === "production",
       sameSite: "lax",
-      maxAge: 10 * 60 * 1000, // 10 minutes (only for OAuth state)
+      maxAge: 10 * 60 * 1000,
     },
   })
 );
@@ -56,41 +55,6 @@ app.get("/health", (req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: APP_CONFIG.app.environment,
-  });
-});
-
-// Debug endpoint to test cookie setting (remove in production)
-app.get("/debug/test-cookie", (req: Request, res: Response) => {
-  logger.info("Testing cookie setting");
-  
-  res.cookie("testCookie", "test-value-" + Date.now(), {
-    httpOnly: true,
-    secure: APP_CONFIG.app.environment === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60000, // 1 minute
-  });
-  
-  res.json({
-    message: "Test cookie set",
-    cookies: req.cookies,
-    environment: APP_CONFIG.app.environment,
-    corsOrigin: APP_CONFIG.cors.origin,
-    frontendURL: APP_CONFIG.cors.frontendURL,
-  });
-});
-
-// Debug endpoint to check received cookies
-app.get("/debug/check-cookies", (req: Request, res: Response) => {
-  logger.info("Checking cookies", { cookies: req.cookies });
-  
-  res.json({
-    receivedCookies: req.cookies,
-    headers: {
-      cookie: req.headers.cookie,
-      origin: req.headers.origin,
-      referer: req.headers.referer,
-    },
   });
 });
 
@@ -117,7 +81,6 @@ const server = app.listen(PORT, () => {
   logger.info(`Server started on port ${PORT} (${APP_CONFIG.app.environment})`);
 });
 
-// Graceful shutdown
 process.on("SIGTERM", () => {
   logger.warn("SIGTERM received. Shutting down gracefully...");
   server.close(() => {
