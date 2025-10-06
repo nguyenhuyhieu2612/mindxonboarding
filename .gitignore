@@ -49,3 +49,4 @@ coverage/
 
 
 openid.txt
+backend-secret.yaml

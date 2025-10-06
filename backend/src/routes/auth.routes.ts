@@ -28,8 +28,6 @@ router.get(
   "/callback",
   handleAsyncError(async (req: Request, res: Response) => {
     try {
-      logger.debug("req.query", req.query);
-
       const { code, state, error, error_description } = req.query;
 
       if (error) {
@@ -103,12 +101,6 @@ router.get(
       };
 
       res.cookie("refreshToken", refreshToken, cookieOptions);
-
-      logger.info("🍪 Refresh token cookie SET", {
-        cookieOptions,
-        refreshTokenLength: refreshToken.length,
-        willRedirectTo: `${APP_CONFIG.cors.frontendURL}/login/#oauth_result=...`,
-      });
 
       logger.info("User authenticated successfully", {
         userId: userInfo.userId,
