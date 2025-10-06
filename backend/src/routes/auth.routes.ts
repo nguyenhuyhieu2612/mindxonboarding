@@ -92,17 +92,20 @@ router.get(
       const { accessToken, refreshToken } =
         await tokenService.generateAccessTokenAndRefreshToken(userInfo.userId);
 
-      res.cookie("refreshToken", refreshToken, {
+      const cookieOptions = {
         httpOnly: true,
         secure: APP_CONFIG.app.environment === "production",
-        sameSite: "lax",
+        sameSite: "lax" as const,
         path: "/",
         maxAge: APP_CONFIG.session.refreshTokenExpiresIn * 1000,
-      });
+      };
 
-      logger.info("Refresh token cookie set", {
-        secure: APP_CONFIG.app.environment === "production",
-        path: "/",
+      res.cookie("refreshToken", refreshToken, cookieOptions);
+
+      logger.info("🍪 Refresh token cookie SET", {
+        cookieOptions,
+        refreshTokenLength: refreshToken.length,
+        willRedirectTo: `${APP_CONFIG.cors.frontendURL}/login/#oauth_result=...`,
       });
 
       logger.info("User authenticated successfully", {
