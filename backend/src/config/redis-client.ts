@@ -1,10 +1,10 @@
 import Redis from "ioredis";
-import { APP_CONFIG } from "./config";
+import { ENVIRONMENT_VARIABLES } from "./environment-variables";
 
 const client = new Redis({
-  host: APP_CONFIG.redis.host,
-  port: APP_CONFIG.redis.port,
-  password: APP_CONFIG.redis.password,
+  host: ENVIRONMENT_VARIABLES.REDIS.HOST,
+  port: ENVIRONMENT_VARIABLES.REDIS.PORT,
+  password: ENVIRONMENT_VARIABLES.REDIS.PASSWORD,
 });
 
 export default client;

@@ -31,23 +31,18 @@ log_error() {
 }
 
 # ==============================================================================
-# LOAD ENVIRONMENT VARIABLES
-# ==============================================================================
-if [ -f ../.env ]; then
-    source ../.env
-else
-    log_error ".env file not found! Please create it from .env.example"
-    exit 1
-fi
-
-# ==============================================================================
 # SCRIPT VARIABLES
 # ==============================================================================
 
 # Kubernetes variables
-K8S_NAMESPACE="mindx-app"
-K8S_SECRET_NAME="monitoring-secrets"
-K8S_SECRET_KEY="APPINSIGHTS_CONNECTION_STRING"
+PROJECT_NAME="mindx"
+ENVIRONMENT="onboarding"
+RESOURCE_GROUP="mindx-hieunh01-rg"
+NAMESPACE="mindx-app"
+SECRET_NAME="monitoring-secrets"
+SECRET_KEY="APPINSIGHTS_CONNECTION_STRING"
+LOG_ANALYTICS_WORKSPACE_NAME="${PROJECT_NAME}-${ENVIRONMENT}-logs"
+APP_INSIGHTS_NAME="${PROJECT_NAME}-${ENVIRONMENT}-insights"
 
 # ==============================================================================
 # MAIN LOGIC
@@ -86,26 +81,27 @@ get_and_store_connection_string() {
 
     log_success "Successfully retrieved Connection String."
 
-    log_info "Creating/Updating Kubernetes secret '${K8S_SECRET_NAME}' in namespace '${K8S_NAMESPACE}'..."
+    log_info "Creating/Updating Kubernetes secret '${SECRET_NAME}' in namespace '${NAMESPACE}'..."
 
-    kubectl create secret generic "${K8S_SECRET_NAME}" \
-        --namespace "${K8S_NAMESPACE}" \
-        --from-literal="${K8S_SECRET_KEY}=${CONNECTION_STRING}" \
+    kubectl create secret generic "${SECRET_NAME}" \
+        --namespace "${NAMESPACE}" \
+        --from-literal="${SECRET_KEY}=${CONNECTION_STRING}" \
         --dry-run=client -o yaml | kubectl apply -f -
 
-    log_success "Kubernetes secret '${K8S_SECRET_NAME}' has been created/updated."
+    log_success "Kubernetes secret '${SECRET_NAME}' has been created/updated."
 
     echo ""
-    log_warning "IMPORTANT: The Connection String has been stored in a Kubernetes secret."
-    log_info "To use it in your deployment, reference it as an environment variable:"
+    log_warning "IMPORTANT:"
+    echo "  1️⃣ The Connection String has been stored in a Kubernetes secret: ${SECRET_NAME}"
+    echo "  2️⃣ To enable Application Insights in your backend deployment:"
+    echo "      - Open file: k8s/backend-deployment.yaml"
+    echo "      - Uncomment the following lines:"
+    echo "            - secretRef:"
+    echo "                name: monitoring-secrets"
+    echo "      - Then reapply your deployment:"
+    echo "            kubectl apply -f k8s/backend-deployment.yaml"
     echo ""
-    echo -e "  env:"
-    echo -e "    - name: APPLICATIONINSIGHTS_CONNECTION_STRING"
-    echo -e "      valueFrom:"
-    echo -e "        secretKeyRef:"
-    echo -e "          name: ${K8S_SECRET_NAME}"
-    echo -e "          key: ${K8S_SECRET_KEY}"
-    echo ""
+    log_success "You're all set 🎉"
 }
 
 main() {
@@ -117,6 +113,12 @@ main() {
     check_kubectl
     check_azure_login
     get_and_store_connection_string
+    
 }
 
 main "$@"
+
+if [ -t 0 ]; then
+    echo "🎉 Script finished. Press Enter to exit..."
+    read
+fi

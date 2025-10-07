@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { tokenService } from "../services/token.services";
-import { HTTP_STATUS } from "../config/contants";
+import HTTP_STATUS from "http-status";
 import { returnError } from "../utils/formatter";
 
 export interface AuthRequest extends Request {

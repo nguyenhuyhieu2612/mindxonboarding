@@ -1,19 +1,22 @@
+import dotenv from "dotenv";
+import { initializeAppInsights } from "./config/app-insights";
+dotenv.config();
+initializeAppInsights();
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import dotenv from "dotenv";
 import compression from "compression";
 import cookieParser from "cookie-parser";
-import session from "express-session";
-import { APP_CONFIG } from "./config/config";
+import { ENVIRONMENT_VARIABLES } from "./config/environment-variables";
 import { logger } from "./utils/logger";
+import { flushTelemetry } from "./utils/telemetry";
+import httpStatus from "http-status";
 import router from "./routes";
-
-dotenv.config();
+import { returnError } from "./utils/formatter";
 
 const app = express();
-const PORT = APP_CONFIG.app.port;
+const PORT = ENVIRONMENT_VARIABLES.APP.PORT;
 
 app.use(
   helmet({
@@ -22,29 +25,15 @@ app.use(
 );
 app.use(
   cors({
-    origin: APP_CONFIG.cors.origin,
-    methods: APP_CONFIG.cors.methods,
-    credentials: APP_CONFIG.cors.credentials,
+    origin: ENVIRONMENT_VARIABLES.CORS.ORIGIN,
+    methods: ENVIRONMENT_VARIABLES.CORS.METHODS,
+    credentials: ENVIRONMENT_VARIABLES.CORS.CREDENTIALS,
   })
 );
 app.use(express.json());
 app.use(morgan("combined"));
 app.use(compression());
 app.use(cookieParser());
-
-app.use(
-  session({
-    secret: APP_CONFIG.session.accessTokenSecret,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: APP_CONFIG.app.environment === "production",
-      sameSite: "lax",
-      maxAge: 10 * 60 * 1000,
-    },
-  })
-);
 
 app.use(router);
 
@@ -54,45 +43,45 @@ app.get("/health", (req: Request, res: Response) => {
     status: "healthy",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: APP_CONFIG.app.environment,
+    environment: ENVIRONMENT_VARIABLES.APP.ENVIRONMENT,
   });
 });
 
 app.use((req: Request, res: Response) => {
-  res.status(404).json({
-    error: "Not Found",
-    path: req.path,
-    method: req.method,
-  });
+  res
+    .status(httpStatus.NOT_FOUND)
+    .json(returnError(`Route not found - ${req.originalUrl}`));
 });
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   logger.error("Unhandled error:", err);
-  res.status(500).json({
-    error: "Internal Server Error",
-    message:
-      APP_CONFIG.app.environment === "production"
-        ? "Something went wrong"
-        : err.message,
-  });
+  res
+    .status(httpStatus.INTERNAL_SERVER_ERROR)
+    .json(returnError("Something went wrong"));
 });
 
 const server = app.listen(PORT, () => {
-  logger.info(`Server started on port ${PORT} (${APP_CONFIG.app.environment})`);
+  logger.info(
+    `Server started on port ${PORT} (${ENVIRONMENT_VARIABLES.APP.ENVIRONMENT})`
+  );
 });
 
 process.on("SIGTERM", () => {
   logger.warn("SIGTERM received. Shutting down gracefully...");
-  server.close(() => {
-    logger.info("Server closed");
+  server.close(async () => {
+    logger.info("Server closed. Flushing telemetry...");
+    await flushTelemetry();
+    logger.info("Telemetry flushed. Exiting.");
     process.exit(0);
   });
 });
 
-process.on("SIGINT", () => {
+process.on("SIGINT", async () => {
   logger.warn("SIGINT received. Shutting down gracefully...");
-  server.close(() => {
-    logger.info("Server closed");
+  server.close(async () => {
+    logger.info("Server closed. Flushing telemetry...");
+    await flushTelemetry();
+    logger.info("Telemetry flushed. Exiting.");
     process.exit(0);
   });
 });

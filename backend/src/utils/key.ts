@@ -1,4 +1,4 @@
-import { APP_CONFIG } from "../config/config";
+import { ENVIRONMENT_VARIABLES } from "../config/environment-variables";
 
 export const getRefreshTokenKey = (refreshToken: string) =>
-  `${APP_CONFIG.app.name}:refresh-tokens:${refreshToken}`;
+  `${ENVIRONMENT_VARIABLES.APP.NAME}:refresh-tokens:${refreshToken}`;

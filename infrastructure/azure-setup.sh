@@ -1,5 +1,5 @@
-# set -e
-# set -u
+set -e
+set -u
 
 # ==============================================================================
 # COLOR DEFINITIONS
@@ -30,14 +30,25 @@ log_error() {
 }
 
 # ==============================================================================
-# LOAD ENVIRONMENT VARIABLES
+# VARIABLES
 # ==============================================================================
-if [ -f ../.env ]; then
-    source ../.env
-else
-    log_error ".env file not found! Please create it from .env.example"
-    exit 1
-fi
+
+PROJECT_NAME="mindx"
+ENVIRONMENT="onboarding"
+LOCATION="eastus"
+RESOURCE_GROUP="mindx-hieunh01-rg"
+
+### Azure Container Registry
+ACR_NAME="${PROJECT_NAME}${ENVIRONMENT}acr"  
+
+### Application Insights
+LOG_ANALYTICS_WORKSPACE_NAME="${PROJECT_NAME}-${ENVIRONMENT}-logs"
+APP_INSIGHTS_NAME="${PROJECT_NAME}-${ENVIRONMENT}-insights"
+
+### Azure Kubernetes Service
+AKS_NAME="${PROJECT_NAME}-${ENVIRONMENT}-aks"
+AKS_NODE_COUNT="2"
+AKS_NODE_SIZE="Standard_D2s_v3"
 
 check_azure_cli() {
     if ! command -v az &> /dev/null; then

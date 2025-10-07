@@ -1,21 +1,25 @@
 import { getRefreshTokenKey } from "../utils/key";
-import { APP_CONFIG } from "../config/config";
+import { ENVIRONMENT_VARIABLES } from "../config/environment-variables";
 import redis from "../config/redis-client";
 import jwt from "jsonwebtoken";
 
 class TokenService {
   generateAccessToken(payload: any): string {
-    return jwt.sign(payload, APP_CONFIG.session.accessTokenSecret, {
-      algorithm: APP_CONFIG.jwt.algorithm as jwt.Algorithm,
-      expiresIn: APP_CONFIG.session.accessTokenExpiresIn,
-    });
+    return jwt.sign(
+      payload,
+      ENVIRONMENT_VARIABLES.SESSION.ACCESS_TOKEN.SECRET,
+      {
+        algorithm: ENVIRONMENT_VARIABLES.JWT.ALGORITHM as jwt.Algorithm,
+        expiresIn: ENVIRONMENT_VARIABLES.SESSION.ACCESS_TOKEN.EXPIRES_IN,
+      }
+    );
   }
 
   verifyAccessToken(token: string): Promise<any> {
     return new Promise((resolve, reject) => {
       jwt.verify(
         token,
-        APP_CONFIG.session.accessTokenSecret,
+        ENVIRONMENT_VARIABLES.SESSION.ACCESS_TOKEN.SECRET,
         (err, decoded) => {
           if (err) {
             return reject(null);
@@ -27,17 +31,21 @@ class TokenService {
   }
 
   generateRefreshToken(payload: any): string {
-    return jwt.sign(payload, APP_CONFIG.session.refreshTokenSecret, {
-      algorithm: APP_CONFIG.jwt.algorithm as jwt.Algorithm,
-      expiresIn: APP_CONFIG.session.refreshTokenExpiresIn,
-    });
+    return jwt.sign(
+      payload,
+      ENVIRONMENT_VARIABLES.SESSION.REFRESH_TOKEN.SECRET,
+      {
+        algorithm: ENVIRONMENT_VARIABLES.JWT.ALGORITHM as jwt.Algorithm,
+        expiresIn: ENVIRONMENT_VARIABLES.SESSION.REFRESH_TOKEN.EXPIRES_IN,
+      }
+    );
   }
 
   verifyRefreshToken(token: string): Promise<any> {
     return new Promise((resolve, reject) => {
       jwt.verify(
         token,
-        APP_CONFIG.session.refreshTokenSecret,
+        ENVIRONMENT_VARIABLES.SESSION.REFRESH_TOKEN.SECRET,
         (err, decoded) => {
           if (err) {
             return reject(err);
@@ -51,7 +59,10 @@ class TokenService {
   async saveRefreshToken(userId: string, refreshToken: string): Promise<void> {
     const key = getRefreshTokenKey(refreshToken);
     await redis.hset(key, { userId });
-    await redis.expire(key, APP_CONFIG.session.refreshTokenExpiresIn);
+    await redis.expire(
+      key,
+      ENVIRONMENT_VARIABLES.SESSION.REFRESH_TOKEN.EXPIRES_IN
+    );
   }
 
   async revokeRefreshToken(refreshToken: string): Promise<void> {

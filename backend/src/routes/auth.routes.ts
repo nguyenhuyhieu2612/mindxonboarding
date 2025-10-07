@@ -1,12 +1,13 @@
 import { Router, Request, Response } from "express";
 import { authService } from "../services/auth.services";
 import { tokenService } from "../services/token.services";
-import { APP_CONFIG } from "../config/config";
+import { ENVIRONMENT_VARIABLES } from "../config/environment-variables";
 import { handleAsyncError } from "../utils/async";
 import { logger } from "../utils/logger";
 import { authenticate, AuthRequest } from "../middleware/auth";
-import { HTTP_STATUS } from "../config/contants";
 import { returnError, returnSuccess } from "../utils/formatter";
+import { trackEvent, trackMetric } from "../utils/telemetry";
+import HTTP_STATUS from "http-status";
 
 const router = Router();
 
@@ -46,7 +47,7 @@ router.get(
 
         const encodedError = encodeURIComponent(JSON.stringify(oauthError));
         return res.redirect(
-          `${APP_CONFIG.cors.frontendURL}#oauth_result=${encodedError}`
+          `${ENVIRONMENT_VARIABLES.FRONTEND_URL}#oauth_result=${encodedError}`
         );
       }
 
@@ -60,7 +61,7 @@ router.get(
 
         const encodedError = encodeURIComponent(JSON.stringify(oauthError));
         return res.redirect(
-          `${APP_CONFIG.cors.frontendURL}#oauth_result=${encodedError}`
+          `${ENVIRONMENT_VARIABLES.FRONTEND_URL}#oauth_result=${encodedError}`
         );
       }
 
@@ -79,7 +80,7 @@ router.get(
 
           const encodedError = encodeURIComponent(JSON.stringify(oauthError));
           return res.redirect(
-            `${APP_CONFIG.cors.frontendURL}#oauth_result=${encodedError}`
+            `${ENVIRONMENT_VARIABLES.FRONTEND_URL}#oauth_result=${encodedError}`
           );
         }
         delete (req.session as any).authState;
@@ -94,10 +95,10 @@ router.get(
 
       const cookieOptions = {
         httpOnly: true,
-        secure: APP_CONFIG.app.environment === "production",
+        secure: ENVIRONMENT_VARIABLES.APP.ENVIRONMENT === "production",
         sameSite: "lax" as const,
         path: "/",
-        maxAge: APP_CONFIG.session.refreshTokenExpiresIn * 1000,
+        maxAge: ENVIRONMENT_VARIABLES.SESSION.REFRESH_TOKEN.EXPIRES_IN * 1000,
       };
 
       res.cookie("refreshToken", refreshToken, cookieOptions);
@@ -105,6 +106,16 @@ router.get(
       logger.info("User authenticated successfully", {
         userId: userInfo.userId,
         isTemporary: userInfo._isTemporary || false,
+      });
+
+      trackEvent("user-login", {
+        userId: userInfo.userId,
+        loginMethod: "mindx-oauth",
+        environment: ENVIRONMENT_VARIABLES.APP.ENVIRONMENT,
+      });
+
+      trackMetric("active-user-logins", 1, {
+        loginMethod: "mindx-oauth",
       });
 
       const oauthResult = {
@@ -116,15 +127,15 @@ router.get(
       };
 
       const encodedResult = encodeURIComponent(JSON.stringify(oauthResult));
-      const redirectUrl = `${APP_CONFIG.cors.frontendURL}/login/#oauth_result=${encodedResult}`;
+      const redirectUrl = `${ENVIRONMENT_VARIABLES.FRONTEND_URL}/login/#oauth_result=${encodedResult}`;
 
       logger.info("Redirecting user to frontend", {
-        frontendUrl: APP_CONFIG.cors.frontendURL,
+        frontendUrl: ENVIRONMENT_VARIABLES.FRONTEND_URL,
       });
 
       res.redirect(redirectUrl);
     } catch (error: any) {
-      logger.error("Error in OAuth callback", {
+      logger.error("❌ Error in OAuth callback", {
         error: error.message,
         stack: error.stack,
       });
@@ -136,7 +147,7 @@ router.get(
 
       const encodedError = encodeURIComponent(JSON.stringify(oauthError));
       res.redirect(
-        `${APP_CONFIG.cors.frontendURL}#oauth_result=${encodedError}`
+        `${ENVIRONMENT_VARIABLES.FRONTEND_URL}#oauth_result=${encodedError}`
       );
     }
   })
@@ -148,17 +159,21 @@ router.post(
   handleAsyncError(async (req: AuthRequest, res: Response) => {
     const { refreshToken } = req.cookies;
 
-    // Clear refresh token cookie (must match set options)
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: APP_CONFIG.app.environment === "production",
+      secure: ENVIRONMENT_VARIABLES.APP.ENVIRONMENT === "production",
       sameSite: "lax",
-      path: "/", // Must match the path used when setting
+      path: "/",
     });
 
     if (refreshToken) {
       await tokenService.revokeRefreshToken(refreshToken);
     }
+
+    trackEvent("user-logout", {
+      userId: req.user?.userId || "unknown",
+      environment: ENVIRONMENT_VARIABLES.APP.ENVIRONMENT,
+    });
 
     return res
       .status(HTTP_STATUS.OK)
@@ -187,10 +202,9 @@ router.post(
     } catch (err) {
       logger.error("Refresh token verification failed", { error: err });
 
-      // Clear invalid refresh token
       res.clearCookie("refreshToken", {
         httpOnly: true,
-        secure: APP_CONFIG.app.environment === "production",
+        secure: ENVIRONMENT_VARIABLES.APP.ENVIRONMENT === "production",
         sameSite: "lax",
         path: "/",
       });

@@ -1,0 +1,160 @@
+@baseUrl = http://localhost:3000/demo
+
+###
+# 📋 Index - List all available endpoints
+GET {{baseUrl}}
+
+###
+# 📊 Track Custom Event - Basic
+GET {{baseUrl}}/event
+
+###
+# 📊 Track Custom Event - Button Click
+GET {{baseUrl}}/event?name=button-click
+
+###
+# 📊 Track Custom Event - User Signup
+GET {{baseUrl}}/event?name=user-signup
+
+###
+# 📊 Track Custom Event - Feature Used
+GET {{baseUrl}}/event?name=feature-used
+
+###
+# 📈 Track Custom Metric - Basic
+GET {{baseUrl}}/metric
+
+###
+# 📈 Track Custom Metric - Response Time
+GET {{baseUrl}}/metric?name=response-time&value=250&unit=ms
+
+###
+# 📈 Track Custom Metric - Active Users
+GET {{baseUrl}}/metric?name=active-users&value=42&unit=count
+
+###
+# 📈 Track Custom Metric - CPU Usage
+GET {{baseUrl}}/metric?name=cpu-usage&value=75.5&unit=percent
+
+###
+# 📈 Track Custom Metric - Queue Size
+GET {{baseUrl}}/metric?name=queue-size&value=128&unit=items
+
+###
+# ❌ Track Exception - Validation Error
+GET {{baseUrl}}/error?type=validation
+
+###
+# ❌ Track Exception - Database Error
+GET {{baseUrl}}/error?type=database
+
+###
+# ❌ Track Exception - Network Error
+GET {{baseUrl}}/error?type=network
+
+###
+# ❌ Track Exception - Custom Error
+GET {{baseUrl}}/error?type=my-custom-error
+
+###
+# 🔗 Track Dependency - Basic
+GET {{baseUrl}}/dependency
+
+###
+# 🔗 Track Dependency - Payment API
+GET {{baseUrl}}/dependency?name=payment-api
+
+###
+# 🔗 Track Dependency - Database
+GET {{baseUrl}}/dependency?name=database-query
+
+###
+# 🔗 Track Dependency - Cache
+GET {{baseUrl}}/dependency?name=redis-cache
+
+###
+# 🔗 Track Dependency - External API
+GET {{baseUrl}}/dependency?name=external-service
+
+###
+# 🚶 Simulate User Journey - Complete Flow
+# Tracks: page view → product view → add to cart → payment → order completed
+GET {{baseUrl}}/journey
+
+###
+# 🎲 Generate Random Load - 10 items
+GET {{baseUrl}}/load?count=10
+
+###
+# 🎲 Generate Random Load - 50 items
+GET {{baseUrl}}/load?count=50
+
+###
+# 🎲 Generate Random Load - 100 items (max)
+GET {{baseUrl}}/load?count=100
+
+###
+# 🔥 Stress Test - Multiple Quick Requests
+# Send 5 journeys in quick succession
+GET {{baseUrl}}/journey
+
+###
+GET {{baseUrl}}/journey
+
+###
+GET {{baseUrl}}/journey
+
+###
+GET {{baseUrl}}/journey
+
+###
+GET {{baseUrl}}/journey
+
+###
+# 📊 Mixed Telemetry Test
+# Send different types of telemetry
+GET {{baseUrl}}/event?name=test-1
+
+###
+GET {{baseUrl}}/metric?name=test-metric-1&value=100
+
+###
+GET {{baseUrl}}/error?type=test-error
+
+###
+GET {{baseUrl}}/dependency?name=test-api
+
+###
+# 🎯 Real-World Scenario Simulation
+# Simulate: User visits → views product → adds to cart → checks out
+
+###
+# Step 1: Homepage visit
+GET {{baseUrl}}/event?name=page-view-home
+
+###
+# Step 2: Product page view
+GET {{baseUrl}}/event?name=page-view-product
+
+###
+# Step 3: Add to cart
+GET {{baseUrl}}/event?name=add-to-cart
+
+###
+# Step 4: Cart items count
+GET {{baseUrl}}/metric?name=cart-items&value=2
+
+###
+# Step 5: Payment processing
+GET {{baseUrl}}/dependency?name=payment-gateway
+
+###
+# Step 6: Order completed
+GET {{baseUrl}}/event?name=order-completed
+
+###
+# Step 7: Revenue metric
+GET {{baseUrl}}/metric?name=revenue&value=99.99&unit=USD
+
+###
+

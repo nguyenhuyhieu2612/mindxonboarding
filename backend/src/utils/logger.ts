@@ -1,4 +1,3 @@
-// Example utility using module alias
 export const logger = {
   info: (message: string, ...args: any[]) => {
     console.log(`[INFO] ${message}`, ...args);
@@ -10,8 +9,8 @@ export const logger = {
     console.warn(`[WARN] ${message}`, ...args);
   },
   debug: (message: string, ...args: any[]) => {
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
       console.log(`[DEBUG] ${message}`, ...args);
     }
-  }
+  },
 };

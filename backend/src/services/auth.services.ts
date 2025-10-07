@@ -1,56 +1,36 @@
 import { TokenResponse } from "types/auth.types";
-import { APP_CONFIG } from "../config/config";
+import { ENVIRONMENT_VARIABLES } from "../config/environment-variables";
 import { logger } from "../utils/logger";
 import axios from "axios";
 import jwt from "jsonwebtoken";
 
 class AuthService {
   getAuthorizationURL(state: string): string {
-    logger.info("Scope:", APP_CONFIG.openid);
     const params = new URLSearchParams({
-      client_id: APP_CONFIG.openid.clientId,
-      redirect_uri: APP_CONFIG.openid.callbackURL,
-      response_type: "code",
-      scope: APP_CONFIG.openid.scope,
+      client_id: ENVIRONMENT_VARIABLES.OPENID.CLIENT_ID,
+      redirect_uri: ENVIRONMENT_VARIABLES.OPENID.REDIRECT_URI,
+      response_type: ENVIRONMENT_VARIABLES.OPENID.RESPONSE_TYPE,
+      scope: ENVIRONMENT_VARIABLES.OPENID.SCOPE,
       state,
     });
 
-    return `${APP_CONFIG.openid.authorizationEndpoint}?${params.toString()}`;
+    return `${
+      ENVIRONMENT_VARIABLES.OPENID.AUTHORIZATION_ENDPOINT
+    }?${params.toString()}`;
   }
 
   async exchangeCodeForTokens(code: string): Promise<TokenResponse> {
     try {
-      logger.info("🔄 Preparing token exchange request", {
-        tokenEndpoint: APP_CONFIG.openid.tokenEndpoint,
-        clientId: APP_CONFIG.openid.clientId,
-        redirectUri: APP_CONFIG.openid.callbackURL,
-        codeLength: code.length,
-        clientSecretPresent: !!APP_CONFIG.openid.clientSecret,
-        clientSecretLength: APP_CONFIG.openid.clientSecret?.length,
-      });
-
       const params = new URLSearchParams({
         grant_type: "authorization_code",
         code,
-        redirect_uri: APP_CONFIG.openid.callbackURL,
-        client_id: APP_CONFIG.openid.clientId,
-        client_secret: APP_CONFIG.openid.clientSecret,
-      });
-
-      logger.info("📤 Sending token exchange request", {
-        url: APP_CONFIG.openid.tokenEndpoint,
-        bodyParams: {
-          grant_type: "authorization_code",
-          code: code.substring(0, 10) + "...",
-          redirect_uri: APP_CONFIG.openid.callbackURL,
-          client_id: APP_CONFIG.openid.clientId,
-          client_secret_first_10:
-            APP_CONFIG.openid.clientSecret.substring(0, 10) + "...",
-        },
+        redirect_uri: ENVIRONMENT_VARIABLES.OPENID.REDIRECT_URI,
+        client_id: ENVIRONMENT_VARIABLES.OPENID.CLIENT_ID,
+        client_secret: ENVIRONMENT_VARIABLES.OPENID.CLIENT_SECRET,
       });
 
       const response = await axios.post<TokenResponse>(
-        APP_CONFIG.openid.tokenEndpoint,
+        ENVIRONMENT_VARIABLES.OPENID.TOKEN_ENDPOINT,
         params.toString(),
         {
           headers: {
@@ -60,16 +40,9 @@ class AuthService {
         }
       );
 
-      logger.info("Token exchange successful", {
-        hasAccessToken: !!response.data.access_token,
-        hasIdToken: !!response.data.id_token,
-        hasRefreshToken: !!response.data.refresh_token,
-      });
-
       return response.data;
     } catch (error: any) {
-      logger.error("Error exchanging code for tokens 0: ", error);
-      logger.error("Error exchanging code for tokens", {
+      logger.error("❌ Error exchanging code for tokens", {
         error: error.response?.data || error.message,
         status: error.response?.status,
       });
@@ -100,7 +73,7 @@ class AuthService {
         userId: decoded.sub,
       };
     } catch (error) {
-      logger.error("Error decoding ID token:", error);
+      logger.error("❌ Error decoding ID token:", error);
       throw new Error("Failed to decode ID token");
     }
   }
