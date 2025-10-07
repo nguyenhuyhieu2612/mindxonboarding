@@ -36,4 +36,4 @@ coverage/
 *.pid
 *.seed
 *.pid.lock
-
+openid.txt

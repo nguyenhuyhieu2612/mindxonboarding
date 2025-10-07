@@ -48,5 +48,5 @@ coverage/
 .azure/
 
 
-openid.txt
-backend-secret.yaml
+backend/openid.txt
+k8s/backend-secret.yaml
