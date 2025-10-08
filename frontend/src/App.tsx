@@ -4,7 +4,7 @@ import useApiHealth from "@/hooks/use-api-health";
 import { Route, Routes } from "react-router-dom";
 import { paths } from "./constants";
 import Home from "@/screens/home";
-import PrivateRoute from "./components/protected-route";
+// import PrivateRoute from "./components/protected-route";
 
 export default function App() {
   useApiHealth();
