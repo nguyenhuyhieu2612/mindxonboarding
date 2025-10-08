@@ -64,7 +64,7 @@ const server = app.listen(PORT, () => {
   logger.info(
     `Server started on port ${PORT} (${ENVIRONMENT_VARIABLES.APP.ENVIRONMENT})`
   );
-  logger.debug("Environment variables: ", ENVIRONMENT_VARIABLES);
+  logger.info("Environment variables: ", ENVIRONMENT_VARIABLES);
 });
 
 process.on("SIGTERM", () => {
