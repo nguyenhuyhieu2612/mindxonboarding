@@ -22,9 +22,6 @@ export default function Login() {
             >
               <span className="truncate">Sign in with MindX account</span>
             </button>
-            <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#f3e7e7] text-[#1b0d0d] text-base font-bold leading-normal tracking-[0.015em] w-full">
-              <span className="truncate">Sign in with Google</span>
-            </button>
           </div>
         </div>
       </div>

@@ -32,32 +32,6 @@ export default function Header() {
       </div>
       {isAuthenticated && (
         <div className="flex flex-1 justify-end gap-8">
-          <div className="flex items-center gap-9">
-            <a
-              className="text-[#1b0d0d] text-sm font-medium leading-normal"
-              href="#"
-            >
-              Home
-            </a>
-            <a
-              className="text-[#1b0d0d] text-sm font-medium leading-normal"
-              href="#"
-            >
-              Courses
-            </a>
-            <a
-              className="text-[#1b0d0d] text-sm font-medium leading-normal"
-              href="#"
-            >
-              About Us
-            </a>
-            <a
-              className="text-[#1b0d0d] text-sm font-medium leading-normal"
-              href="#"
-            >
-              Contact
-            </a>
-          </div>
           <button
             onClick={actions.logout}
             className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f3e7e7] text-[#1b0d0d] text-sm font-bold leading-normal tracking-[0.015em]"

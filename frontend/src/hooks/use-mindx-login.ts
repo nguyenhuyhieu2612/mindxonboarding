@@ -4,6 +4,9 @@ import { setCredentials } from "@/store/auth.slice";
 import { useAppDispatch } from "@/store/hooks";
 import { useNavigate } from "react-router-dom";
 import { paths } from "@/constants";
+import { AppInsights } from "@/app-insights";
+
+const appInsights = AppInsights.init();
 
 export default function useMindXLogin() {
   const dispatch = useAppDispatch();
@@ -15,7 +18,11 @@ export default function useMindXLogin() {
   const handleMindXLogin = React.useCallback(() => {
     setLoading(true);
     setError(null);
-
+    appInsights.trackEvent("Auth_Login_Attempted", {
+      provider: "mindx",
+      method: "oauth",
+      timestamp: new Date().toISOString(),
+    });
     try {
       const returnUrl = window.location.pathname + window.location.search;
       sessionStorage.setItem("oauth_return_url", returnUrl);
@@ -31,6 +38,18 @@ export default function useMindXLogin() {
       setLoading(false);
       setError("Failed to initiate authentication");
       sessionStorage.removeItem("oauth_state");
+      appInsights.trackException(
+        error instanceof Error ? error : new Error(String(error)),
+        {
+          stage: "initiation",
+          provider: "mindx",
+        }
+      );
+      appInsights.trackEvent("Auth_Login_Failed", {
+        provider: "mindx",
+        error: error instanceof Error ? error.message : String(error),
+        stage: "initiation",
+      });
     } finally {
       setLoading(false);
     }
@@ -53,7 +72,14 @@ export default function useMindXLogin() {
 
         if (result.type === "OAUTH_SUCCESS") {
           console.log("OAuth authentication successful", result);
-
+          appInsights.trackEvent("Auth_Login_Succeeded", {
+            provider: "mindx",
+            userId: result.payload.user?.userId,
+            timestamp: new Date().toISOString(),
+          });
+          if (result.payload.user?.userId) {
+            appInsights.setUser(result.payload.user.userId);
+          }
           if (result.payload.accessToken) {
             dispatch(
               setCredentials({
@@ -66,6 +92,11 @@ export default function useMindXLogin() {
         } else if (result.type === "OAUTH_ERROR") {
           console.error("OAuth authentication failed:", result.error);
           setError(result.error || "Authentication failed");
+          appInsights.trackEvent("Auth_Login_Failed", {
+            provider: "mindx",
+            error: result.error,
+            stage: "callback",
+          });
         }
 
         window.history.replaceState(
@@ -81,6 +112,13 @@ export default function useMindXLogin() {
         console.error("Error parsing OAuth callback:", err);
         setError("Failed to process authentication response");
         sessionStorage.removeItem("oauth_state");
+        appInsights.trackException(
+          err instanceof Error ? err : new Error(String(err)),
+          {
+            stage: "callback_parsing",
+            provider: "mindx",
+          }
+        );
       }
     };
 

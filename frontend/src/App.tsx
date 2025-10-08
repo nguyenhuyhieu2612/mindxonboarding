@@ -14,9 +14,9 @@ export default function App() {
       <Routes>
         <Route element={<MainLayout />}>
           <Route path={paths.login} element={<Login />} />
-          <Route element={<PrivateRoute />}>
-            <Route path={paths.home} element={<Home />} />
-          </Route>
+          {/* <Route element={<PrivateRoute />}> */}
+          <Route path={paths.home} element={<Home />} />
+          {/* </Route> */}
         </Route>
       </Routes>
     </div>

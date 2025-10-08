@@ -32,8 +32,8 @@ spec:
             - secretRef:
                 name: backend-secret
             # Uncomment the following lines after creating the monitoring secret:
-            # - secretRef:
-            #     name: monitoring-secrets
+            - secretRef:
+                name: monitoring-secrets
           resources:
             requests:
               memory: "256Mi"

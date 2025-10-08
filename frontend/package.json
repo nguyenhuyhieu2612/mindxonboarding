@@ -10,12 +10,15 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "@microsoft/applicationinsights-react-js": "^18.3.6",
+    "@microsoft/applicationinsights-web": "^3.3.10",
     "@reduxjs/toolkit": "^2.9.0",
     "axios": "^1.6.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^6.30.1"
+    "react-router-dom": "^6.30.1",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@tailwindcss/container-queries": "^0.1.1",
