@@ -1,6 +1,8 @@
 import { Component, ReactNode, ErrorInfo } from "react";
 import { AppInsights } from "@/app-insights";
 
+const appInsights = AppInsights.init();
+
 interface ErrorBoundaryProps {
   children: ReactNode;
 }
@@ -21,7 +23,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    AppInsights.trackException(error, {
+    appInsights.trackException(error, {
       componentStack: errorInfo.componentStack || "N/A",
       errorBoundary: "true",
     });
