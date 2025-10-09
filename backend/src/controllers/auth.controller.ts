@@ -59,37 +59,39 @@ export const handleLoginWithGoogle = handleAsyncError(
   <title>Authentication Complete</title>
 </head>
 <body>
+  <p>Authentication successful! Closing window...</p>
   <script>
     console.log("🔵 OAuth callback started");
     
     const oauthResult = ${JSON.stringify(oauthResult)};
-    let messageSent = false;
 
     function sendMessage() {
-      if (messageSent) return;
-      
       try {
         if (window.opener && !window.opener.closed) {
           console.log("📤 Attempting to post message to opener...");
           
-          // Thử nhiều origin
-          const origins = [
-            "${config.FRONTEND_URL}",
-            window.location.origin,
-            "http://localhost:3000", // THÊM LOCALHOST CỦA BẠN
-            "http://localhost:5173", // VITE DEFAULT
-            "*" // FALLBACK
-          ];
+          // Lấy origin từ document.referrer hoặc window.opener
+          let targetOrigin = "${config.FRONTEND_URL}";
           
-          origins.forEach(origin => {
+          // Nếu có document.referrer, sử dụng origin đó
+          if (document.referrer) {
             try {
-              window.opener.postMessage(oauthResult, origin);
-              console.log("✅ Message sent to origin:", origin);
-              messageSent = true;
-            } catch (err) {
-              console.log("❌ Failed to send to origin:", origin, err);
+              const referrerUrl = new URL(document.referrer);
+              targetOrigin = referrerUrl.origin;
+              console.log("📍 Using referrer origin:", targetOrigin);
+            } catch (e) {
+              console.warn("Cannot parse referrer:", e);
             }
-          });
+          }
+          
+          // Gửi message đến origin chính xác
+          window.opener.postMessage(oauthResult, targetOrigin);
+          console.log("✅ Message sent to origin:", targetOrigin);
+          
+          // Đóng popup sau khi gửi thành công
+          setTimeout(() => {
+            window.close();
+          }, 500);
         } else {
           console.error("🚫 No window.opener or opener is closed");
         }
@@ -100,14 +102,6 @@ export const handleLoginWithGoogle = handleAsyncError(
 
     // GỬI MESSAGE NGAY LẬP TỨC
     sendMessage();
-    
-    // GỬI LẠI SAU 500ms ĐỂ CHẮC CHẮN
-    setTimeout(sendMessage, 500);
-    
-    // GỬI LẠI SAU 1s 
-    setTimeout(sendMessage, 1000);
-
-    
 
   </script>
 </body>

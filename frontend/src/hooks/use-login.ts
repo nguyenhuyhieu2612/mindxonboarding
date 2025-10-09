@@ -42,11 +42,23 @@ export default function useLogin() {
         }
 
         const handleMessage = (event: MessageEvent<OAuthMessage>) => {
-          console.log("handleMessage");
-          if (event.origin !== API_BASE_URL) return;
+          console.log("handleMessage", { origin: event.origin, data: event.data });
+          
+          // Kiểm tra origin - accept cả relative path và full URL
+          const expectedOrigin = API_BASE_URL.startsWith('http') 
+            ? API_BASE_URL 
+            : window.location.origin;
+          
+          if (event.origin !== expectedOrigin) {
+            console.log("❌ Origin mismatch:", { 
+              received: event.origin, 
+              expected: expectedOrigin 
+            });
+            return;
+          }
 
           const data = event.data;
-          console.log("data", data);
+          console.log("✅ OAuth data received:", data);
           if (data.type === "OAUTH_SUCCESS" && data.payload) {
             dispatch(setCredentials(data.payload));
             navigate(paths.home);
