@@ -88,10 +88,10 @@ export const handleLoginWithGoogle = handleAsyncError(
           window.opener.postMessage(oauthResult, targetOrigin);
           console.log("✅ Message sent to origin:", targetOrigin);
           
-          // Đóng popup sau khi gửi thành công
-          setTimeout(() => {
-            window.close();
-          }, 500);
+          // ❌ KHÔNG TỰ ĐỘNG ĐÓNG - ĐỂ DEBUG
+          // setTimeout(() => {
+          //   window.close();
+          // }, 500);
         } else {
           console.error("🚫 No window.opener or opener is closed");
         }
