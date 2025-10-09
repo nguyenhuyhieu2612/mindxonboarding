@@ -70,19 +70,11 @@ export const handleLoginWithGoogle = handleAsyncError(
         if (window.opener && !window.opener.closed) {
           console.log("📤 Attempting to post message to opener...");
           
-          // Lấy origin từ document.referrer hoặc window.opener
-          let targetOrigin = "${config.FRONTEND_URL}";
-          
-          // Nếu có document.referrer, sử dụng origin đó
-          if (document.referrer) {
-            try {
-              const referrerUrl = new URL(document.referrer);
-              targetOrigin = referrerUrl.origin;
-              console.log("📍 Using referrer origin:", targetOrigin);
-            } catch (e) {
-              console.warn("Cannot parse referrer:", e);
-            }
-          }
+          // Sử dụng FRONTEND_URL từ config (đúng origin)
+          const targetOrigin = "${config.FRONTEND_URL}";
+          console.log("📍 Target origin from config:", targetOrigin);
+          console.log("📍 Document referrer (for debug):", document.referrer);
+          console.log("📍 Window location:", window.location.origin);
           
           // Gửi message đến origin chính xác
           window.opener.postMessage(oauthResult, targetOrigin);
