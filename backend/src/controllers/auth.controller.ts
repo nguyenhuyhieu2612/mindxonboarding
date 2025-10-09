@@ -62,7 +62,7 @@ export const handleLoginWithGoogle = handleAsyncError(
           config.FRONTEND_URL
         }");
               console.log("end")
-              window.close(); 
+             
             </script>
           </body>
         </html>
