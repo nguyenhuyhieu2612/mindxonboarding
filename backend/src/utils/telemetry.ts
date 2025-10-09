@@ -1,5 +1,6 @@
 import { KnownSeverityLevel } from "applicationinsights";
 import { getAppInsightsClient } from "../config/app-insights";
+import { config } from "../config";
 
 export function trackEvent(
   name: string,
@@ -12,8 +13,9 @@ export function trackEvent(
   client.trackEvent({
     name,
     properties: {
-      timestamp: new Date().toISOString(),
       ...properties,
+      timestamp: new Date().toISOString(),
+      environment: config.NODE_ENV,
     },
     measurements,
   });
@@ -30,7 +32,10 @@ export function trackMetric(
   client.trackMetric({
     name,
     value,
-    properties,
+    properties: {
+      ...properties,
+      environment: config.NODE_ENV,
+    },
   });
 }
 
@@ -43,28 +48,62 @@ export function trackException(
 
   client.trackException({
     exception: error,
-    properties,
+    properties: {
+      ...properties,
+      environment: config.NODE_ENV,
+      stack: error.stack,
+    },
   });
 }
 
 export function trackDependency(
   name: string,
-  dependencyTypeName: string,
-  data: string,
+  method: string,
+  url: string,
   duration: number,
   success: boolean,
-  resultCode?: number
+  resultCode: string,
+  dependencyTypeName: string,
+  properties?: { [key: string]: any }
 ): void {
   const client = getAppInsightsClient();
   if (!client) return;
 
   client.trackDependency({
     name,
-    dependencyTypeName,
-    data,
+    target: url,
+    data: `${method} ${url}`,
     duration,
     success,
     resultCode,
+    dependencyTypeName,
+    properties: {
+      ...properties,
+      environment: config.NODE_ENV,
+    },
+  });
+}
+
+export function trackRequest(
+  method: string,
+  url: string,
+  duration: number,
+  statusCode: number,
+  success: boolean,
+  properties = {}
+) {
+  const client = getAppInsightsClient();
+  if (!client) return;
+  client.trackRequest({
+    name: `${method} ${url}`,
+    url,
+    duration,
+    resultCode: statusCode.toString(),
+    success,
+    properties: {
+      ...properties,
+      environment: config.NODE_ENV,
+    },
   });
 }
 
@@ -79,7 +118,10 @@ export function trackTrace(
   client.trackTrace({
     message,
     severity,
-    properties,
+    properties: {
+      ...properties,
+      environment: config.NODE_ENV,
+    },
   });
 }
 

@@ -8,6 +8,7 @@ import {
   returnError,
   returnSuccess,
   trackEvent,
+  trackMetric,
 } from "../utils";
 
 export const handleLoginWithGoogle = handleAsyncError(
@@ -57,6 +58,11 @@ export const handleLoginWithGoogle = handleAsyncError(
           id: userIns.id.toString(),
           name: userIns.name,
           email: userIns.email,
+          loginMethod: "google-oauth",
+          environment: config.NODE_ENV,
+        });
+
+        trackMetric("user-active", 1, {
           loginMethod: "google-oauth",
           environment: config.NODE_ENV,
         });
@@ -130,6 +136,13 @@ export const handleLogout = handleAsyncError(
     if (refreshToken) {
       await tokenService.revokeRefreshToken(refreshToken);
     }
+
+    trackEvent("user-logout", {
+      id: (req.user as any).id.toString(),
+      name: (req.user as any).name,
+      email: (req.user as any).email,
+      environment: config.NODE_ENV,
+    });
 
     return res
       .status(httpStatus.OK)

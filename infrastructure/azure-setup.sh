@@ -1,5 +1,5 @@
-set -e
-set -u
+# set -e
+# set -u
 
 # ==============================================================================
 # COLOR DEFINITIONS
@@ -149,13 +149,14 @@ create_app_insights() {
     if az monitor app-insights component show --app "$APP_INSIGHTS_NAME" --resource-group "$RESOURCE_GROUP" &> /dev/null; then
         log_warning "Application Insights '$APP_INSIGHTS_NAME' already exists. Skipping creation."
     else
-        az monitor app-insights component create \
-            --app "$APP_INSIGHTS_NAME" \
-            --resource-group "$RESOURCE_GROUP" \
-            --location "$LOCATION" \
-            --workspace "$WORKSPACE_ID" \
-            --application-type web \
-            --kind web
+        MSYS_NO_PATHCONV=1 az monitor app-insights component create \
+        --app "$APP_INSIGHTS_NAME" \
+        --resource-group "$RESOURCE_GROUP" \
+        --location "$LOCATION" \
+        --workspace "$WORKSPACE_ID" \
+        --application-type web \
+        --kind web
+
         log_success "Application Insights created successfully"
     fi
 }
