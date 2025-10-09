@@ -42,6 +42,7 @@ export default function useLogin() {
         }
 
         const handleMessage = (event: MessageEvent<OAuthMessage>) => {
+          console.log("handleMessage");
           if (event.origin !== API_BASE_URL) return;
 
           const data = event.data;
