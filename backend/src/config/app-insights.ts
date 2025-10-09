@@ -15,12 +15,13 @@ export function initializeAppInsights(): void {
     appInsights
       .setup(connectionString)
       .setAutoCollectRequests(true)
-      .setAutoCollectPerformance(true, true)
+      .setAutoCollectPerformance(true, false)
       .setAutoCollectExceptions(true)
       .setAutoCollectDependencies(true)
-      .setAutoCollectConsole(true, true)
+      .setAutoCollectConsole(false, false)
       .setUseDiskRetryCaching(true)
-      .setSendLiveMetrics(true)
+      .setSendLiveMetrics(false) // Tạm thời tắt live metrics
+      .setDistributedTracingMode(appInsights.DistributedTracingModes.AI)
       .start();
 
     appInsights.defaultClient.context.tags["ai.cloud.role"] =
