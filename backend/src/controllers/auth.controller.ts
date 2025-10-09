@@ -38,7 +38,9 @@ export const handleLoginWithGoogle = handleAsyncError(
         }
 
         const { accessToken, refreshToken } =
-          await tokenService.generateAccessTokenAndRefreshToken(userIns.id);
+          await tokenService.generateAccessTokenAndRefreshToken(
+            userIns.id.toString()
+          );
 
         setRefreshTokenCookie(res, refreshToken);
 
