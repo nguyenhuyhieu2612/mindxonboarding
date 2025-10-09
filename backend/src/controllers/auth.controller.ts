@@ -53,20 +53,66 @@ export const handleLoginWithGoogle = handleAsyncError(
         };
 
         res.send(`
-        <!DOCTYPE html>
-        <html>
-          <body>
-            <script>
-            console.log("start")
-              window.opener.postMessage(${JSON.stringify(oauthResult)}, "${
-          config.FRONTEND_URL
-        }");
-              console.log("end")
-             
-            </script>
-          </body>
-        </html>
-      `);
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Authentication Complete</title>
+</head>
+<body>
+  <script>
+    console.log("🔵 OAuth callback started");
+    
+    const oauthResult = ${JSON.stringify(oauthResult)};
+    let messageSent = false;
+
+    function sendMessage() {
+      if (messageSent) return;
+      
+      try {
+        if (window.opener && !window.opener.closed) {
+          console.log("📤 Attempting to post message to opener...");
+          
+          // Thử nhiều origin
+          const origins = [
+            "${config.FRONTEND_URL}",
+            window.location.origin,
+            "http://localhost:3000", // THÊM LOCALHOST CỦA BẠN
+            "http://localhost:5173", // VITE DEFAULT
+            "*" // FALLBACK
+          ];
+          
+          origins.forEach(origin => {
+            try {
+              window.opener.postMessage(oauthResult, origin);
+              console.log("✅ Message sent to origin:", origin);
+              messageSent = true;
+            } catch (err) {
+              console.log("❌ Failed to send to origin:", origin, err);
+            }
+          });
+        } else {
+          console.error("🚫 No window.opener or opener is closed");
+        }
+      } catch (error) {
+        console.error("💥 Error in postMessage:", error);
+      }
+    }
+
+    // GỬI MESSAGE NGAY LẬP TỨC
+    sendMessage();
+    
+    // GỬI LẠI SAU 500ms ĐỂ CHẮC CHẮN
+    setTimeout(sendMessage, 500);
+    
+    // GỬI LẠI SAU 1s 
+    setTimeout(sendMessage, 1000);
+
+    
+
+  </script>
+</body>
+</html>
+`);
       }
     )(req, res, next);
   }
