@@ -1,6 +1,6 @@
 import httpStatus from "http-status";
 import { Request, Response } from "express";
-import { returnSuccess } from "utils/formatter";
+import { returnSuccess } from "../utils/formatter";
 import { handleAsyncError } from "../utils/async";
 
 export const handleGetCurrentUser = handleAsyncError(async (req, res) => {
