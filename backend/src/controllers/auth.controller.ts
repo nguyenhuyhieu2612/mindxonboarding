@@ -52,6 +52,9 @@ export const handleLoginWithGoogle = handleAsyncError(
           },
         };
 
+        // Set COOP header để cho phép popup communication
+        res.setHeader('Cross-Origin-Opener-Policy', 'unsafe-none');
+
         res.send(`
 <!DOCTYPE html>
 <html>
