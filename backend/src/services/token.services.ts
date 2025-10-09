@@ -1,4 +1,4 @@
-import { getRefreshTokenKey } from "../utils/key";
+import { getRefreshTokenKey } from "../utils";
 import config from "../config/config";
 import redis from "../config/redis-client";
 import jwt from "jsonwebtoken";
@@ -40,7 +40,7 @@ class TokenService {
     });
   }
 
-  async saveRefreshToken(userId: string, refreshToken: string): Promise<void> {
+  async saveRefreshToken(userId: number, refreshToken: string): Promise<void> {
     const key = getRefreshTokenKey(refreshToken);
     await redis.hset(key, { userId });
     await redis.expire(key, config.REFRESH_TOKEN_EXPIRES_IN);
@@ -50,7 +50,7 @@ class TokenService {
     await redis.del(getRefreshTokenKey(refreshToken));
   }
 
-  async generateAccessTokenAndRefreshToken(userId: string): Promise<{
+  async generateAccessTokenAndRefreshToken(userId: number): Promise<{
     accessToken: string;
     refreshToken: string;
   }> {

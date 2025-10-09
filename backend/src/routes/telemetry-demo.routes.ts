@@ -1,12 +1,12 @@
 import { Router, Request, Response } from "express";
-import { handleAsyncError } from "../utils/async";
-import { logger } from "../utils/logger";
 import {
+  handleAsyncError,
+  logger,
   trackEvent,
   trackMetric,
   trackException,
   trackDependency,
-} from "../utils/telemetry";
+} from "../utils";
 
 const router = Router();
 

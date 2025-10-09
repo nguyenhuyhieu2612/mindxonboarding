@@ -3,10 +3,9 @@ import cors from "cors";
 import morgan from "morgan";
 import compression from "compression";
 import cookieParser from "cookie-parser";
-import { logger } from "./utils/logger";
+import { logger, returnError } from "./utils";
 import httpStatus from "http-status";
 import router from "./routes";
-import { returnError } from "./utils/formatter";
 import config from "./config/config";
 import session from "express-session";
 

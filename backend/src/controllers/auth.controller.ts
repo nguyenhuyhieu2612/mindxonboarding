@@ -1,10 +1,9 @@
 import passport from "passport";
 import httpStatus from "http-status";
-import { handleAsyncError } from "../utils/async";
+import { handleAsyncError, returnError, returnSuccess } from "../utils";
 import { Request, Response, NextFunction } from "express";
 import { tokenService } from "../services/token.services";
 import config from "../config/config";
-import { returnError, returnSuccess } from "../utils/formatter";
 import { prisma } from "../config/prisma-client";
 
 export const handleLoginWithGoogle = handleAsyncError(
@@ -38,9 +37,7 @@ export const handleLoginWithGoogle = handleAsyncError(
         }
 
         const { accessToken, refreshToken } =
-          await tokenService.generateAccessTokenAndRefreshToken(
-            userIns.id.toString()
-          );
+          await tokenService.generateAccessTokenAndRefreshToken(userIns.id);
 
         setRefreshTokenCookie(res, refreshToken);
 

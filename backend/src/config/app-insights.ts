@@ -1,6 +1,6 @@
 import * as appInsights from "applicationinsights";
 import config from "./config";
-import { logger } from "../utils/logger";
+import { logger } from "../utils";
 
 export function initializeAppInsights(): void {
   const connectionString = config.APPLICATIONINSIGHTS_CONNECTION_STRING;

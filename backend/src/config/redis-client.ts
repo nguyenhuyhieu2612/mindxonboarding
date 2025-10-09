@@ -1,6 +1,6 @@
 import Redis from "ioredis";
 import config from "./config";
-import { logger } from "../utils/logger";
+import { logger } from "../utils";
 
 const client = new Redis({
   host: config.REDIS_HOST,

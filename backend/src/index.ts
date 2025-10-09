@@ -14,8 +14,7 @@ import "./config/prisma-client";
 import http from "http";
 import app from "./app";
 import config from "./config/config";
-import { logger } from "./utils/logger";
-import { flushTelemetry } from "./utils/telemetry";
+import { logger, flushTelemetry } from "./utils";
 
 // --- Create and start server ---
 const server = http.createServer(app);

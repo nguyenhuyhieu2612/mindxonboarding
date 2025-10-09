@@ -1,6 +1,6 @@
 import { TokenResponse } from "types/auth.types";
 import config from "../config/config";
-import { logger } from "../utils/logger";
+import { logger } from "../utils";
 import axios from "axios";
 import jwt from "jsonwebtoken";
 
