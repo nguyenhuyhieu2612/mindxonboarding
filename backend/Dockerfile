@@ -5,14 +5,16 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package*.json ./ 
 COPY tsconfig.json ./
+COPY prisma ./prisma
 
 RUN npm ci
+RUN npx prisma generate   # 👈 Thêm dòng này để tạo client trước khi build
 
 COPY src/ ./src/
-
 RUN npm run build
+
 
 # ===========================
 # Stage 2: Production stage
@@ -25,8 +27,9 @@ RUN addgroup -g 1001 -S nodejs && \
 WORKDIR /app
 
 COPY package*.json ./
-
+COPY prisma ./prisma         
 RUN npm ci --only=production && \
+    npx prisma generate && \ 
     npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
