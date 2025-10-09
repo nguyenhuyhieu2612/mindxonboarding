@@ -52,55 +52,41 @@ export const handleLoginWithGoogle = handleAsyncError(
           },
         };
 
-        // Set COOP header để cho phép popup communication
-        res.setHeader('Cross-Origin-Opener-Policy', 'unsafe-none');
+        res.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
 
         res.send(`
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Authentication Complete</title>
-</head>
-<body>
-  <p>Authentication successful! Closing window...</p>
-  <script>
-    console.log("🔵 OAuth callback started");
-    
-    const oauthResult = ${JSON.stringify(oauthResult)};
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Authentication Complete</title>
+          </head>
+          <body>
+            <p>Authentication successful! Closing window...</p>
+            <script>
+              console.log("🔵 OAuth callback started");
+              
+              const oauthResult = ${JSON.stringify(oauthResult)};
 
-    function sendMessage() {
-      try {
-        if (window.opener && !window.opener.closed) {
-          console.log("📤 Attempting to post message to opener...");
-          
-          // Sử dụng FRONTEND_URL từ config (đúng origin)
-          const targetOrigin = "${config.FRONTEND_URL}";
-          console.log("📍 Target origin from config:", targetOrigin);
-          console.log("📍 Document referrer (for debug):", document.referrer);
-          console.log("📍 Window location:", window.location.origin);
-          
-          // Gửi message đến origin chính xác
-          window.opener.postMessage(oauthResult, targetOrigin);
-          console.log("✅ Message sent to origin:", targetOrigin);
-          
-          // ❌ KHÔNG TỰ ĐỘNG ĐÓNG - ĐỂ DEBUG
-          // setTimeout(() => {
-          //   window.close();
-          // }, 500);
-        } else {
-          console.error("🚫 No window.opener or opener is closed");
-        }
-      } catch (error) {
-        console.error("💥 Error in postMessage:", error);
-      }
-    }
+              function sendMessage() {
+                try {
+                  if (window.opener && !window.opener.closed) {
+                    const targetOrigin = "${config.FRONTEND_URL}";
+                    window.opener.postMessage(oauthResult, targetOrigin);          
+                    setTimeout(() => {
+                      window.close();
+                    }, 500);
+                  } else {
+                    console.error("🚫 No window.opener or opener is closed");
+                  }
+                } catch (error) {
+                  console.error("💥 Error in postMessage:", error);
+                }
+              }
+              sendMessage();
 
-    // GỬI MESSAGE NGAY LẬP TỨC
-    sendMessage();
-
-  </script>
-</body>
-</html>
+            </script>
+          </body>
+          </html>
 `);
       }
     )(req, res, next);

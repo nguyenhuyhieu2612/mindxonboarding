@@ -42,31 +42,13 @@ export default function useLogin() {
         }
 
         const handleMessage = (event: MessageEvent<OAuthMessage>) => {
-          console.log("🎯 handleMessage TRIGGERED", { 
-            origin: event.origin, 
-            data: event.data,
-            type: typeof event.data,
-            dataType: event.data?.type
-          });
-          
-          // Kiểm tra origin - accept cả relative path và full URL
-          const expectedOrigin = API_BASE_URL.startsWith('http') 
-            ? API_BASE_URL 
+          const expectedOrigin = API_BASE_URL.startsWith("http")
+            ? API_BASE_URL
             : window.location.origin;
-          
-          console.log("🔍 Origin check:", { 
-            received: event.origin, 
-            expected: expectedOrigin,
-            match: event.origin === expectedOrigin
-          });
-          
-          if (event.origin !== expectedOrigin) {
-            console.log("❌ Origin mismatch - IGNORED");
-            return;
-          }
+
+          if (event.origin !== expectedOrigin) return;
 
           const data = event.data;
-          console.log("✅ OAuth data ACCEPTED:", data);
           if (data.type === "OAUTH_SUCCESS" && data.payload) {
             dispatch(setCredentials(data.payload));
             navigate(paths.home);
@@ -91,9 +73,7 @@ export default function useLogin() {
           popup.close();
         };
 
-        console.log("📡 Registering message event listener...");
         window.addEventListener("message", handleMessage);
-        console.log("✅ Message listener registered, waiting for messages...");
       };
     },
     [dispatch, navigate]
