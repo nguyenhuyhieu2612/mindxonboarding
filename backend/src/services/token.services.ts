@@ -1,6 +1,5 @@
 import { getRefreshTokenKey } from "../utils";
-import config from "../config/config";
-import redis from "../config/redis-client";
+import { config, redisClient } from "../config";
 import jwt from "jsonwebtoken";
 
 class TokenService {
@@ -42,12 +41,12 @@ class TokenService {
 
   async saveRefreshToken(userId: number, refreshToken: string): Promise<void> {
     const key = getRefreshTokenKey(refreshToken);
-    await redis.hset(key, { userId });
-    await redis.expire(key, config.REFRESH_TOKEN_EXPIRES_IN);
+    await redisClient.hset(key, { userId });
+    await redisClient.expire(key, config.REFRESH_TOKEN_EXPIRES_IN);
   }
 
   async revokeRefreshToken(refreshToken: string): Promise<void> {
-    await redis.del(getRefreshTokenKey(refreshToken));
+    await redisClient.del(getRefreshTokenKey(refreshToken));
   }
 
   async generateAccessTokenAndRefreshToken(userId: number): Promise<{
@@ -68,8 +67,8 @@ class TokenService {
       const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
 
       if (expiresIn > 0) {
-        await redis.set(key, "1");
-        await redis.expire(key, expiresIn);
+        await redisClient.set(key, "1");
+        await redisClient.expire(key, expiresIn);
       }
     } catch (error) {
       throw error;
@@ -78,7 +77,7 @@ class TokenService {
 
   async isTokenBlacklisted(token: string): Promise<boolean> {
     const key = `blacklist:${token}`;
-    const result = await redis.get(key);
+    const result = await redisClient.get(key);
     return result !== null;
   }
 }

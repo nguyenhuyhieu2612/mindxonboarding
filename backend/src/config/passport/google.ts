@@ -1,6 +1,6 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
-import config from "../config";
+import { config } from "../config";
 
 passport.use(
   new GoogleStrategy(

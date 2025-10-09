@@ -4,7 +4,7 @@ import {
   Profile,
   VerifyCallback,
 } from "passport-openidconnect";
-import config from "../config";
+import { config } from "../config";
 
 passport.use(
   new OpenIDConnectStrategy(

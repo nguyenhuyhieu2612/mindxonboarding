@@ -46,7 +46,7 @@ const raw = result.data;
 
 const DATABASE_URL = `postgresql://${raw.POSTGRES_USER}:${raw.POSTGRES_PASSWORD}@${raw.POSTGRES_HOST}:${raw.POSTGRES_PORT}/${raw.POSTGRES_DB_NAME}`;
 
-const ENV = {
+export const config = {
   NODE_ENV: raw.NODE_ENV,
   PORT: raw.PORT ? parseInt(raw.PORT, 10) : 3000,
   FRONTEND_URL: raw.FRONTEND_URL,
@@ -100,5 +100,3 @@ const ENV = {
 
   DATABASE_URL,
 };
-
-export default ENV;

@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser";
 import { logger, returnError } from "./utils";
 import httpStatus from "http-status";
 import router from "./routes";
-import config from "./config/config";
+import { config } from "./config";
 import session from "express-session";
 
 const app = express();

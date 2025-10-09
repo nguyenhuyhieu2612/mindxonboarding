@@ -13,7 +13,7 @@ import "./config/prisma-client";
 
 import http from "http";
 import app from "./app";
-import config from "./config/config";
+import { config } from "./config";
 import { logger, flushTelemetry } from "./utils";
 
 // --- Create and start server ---

@@ -1,10 +1,14 @@
 import passport from "passport";
 import httpStatus from "http-status";
-import { handleAsyncError, returnError, returnSuccess } from "../utils";
+import { prisma, config } from "../config";
 import { Request, Response, NextFunction } from "express";
 import { tokenService } from "../services/token.services";
-import config from "../config/config";
-import { prisma } from "../config/prisma-client";
+import {
+  handleAsyncError,
+  returnError,
+  returnSuccess,
+  trackEvent,
+} from "../utils";
 
 export const handleLoginWithGoogle = handleAsyncError(
   async (req, res, next) => {
@@ -48,6 +52,14 @@ export const handleLoginWithGoogle = handleAsyncError(
             user: userIns,
           },
         };
+
+        trackEvent("user-login", {
+          id: userIns.id.toString(),
+          name: userIns.name,
+          email: userIns.email,
+          loginMethod: "google-oauth",
+          environment: config.NODE_ENV,
+        });
 
         res.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
 
