@@ -37,3 +37,8 @@ coverage/
 *.seed
 *.pid.lock
 openid.txt
+client_secret_610690638999-ulk6jf5t9mleokk3mu4tt2jblf58s15f.apps.googleusercontent.com.json
+DigiCertGlobalRootCA.crt
+/src/generated/prisma
+
+/src/generated/prisma

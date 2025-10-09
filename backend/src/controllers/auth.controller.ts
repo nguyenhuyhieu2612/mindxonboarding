@@ -1,0 +1,149 @@
+import passport from "passport";
+import httpStatus from "http-status";
+import { handleAsyncError } from "../utils/async";
+import { Request, Response, NextFunction } from "express";
+import { tokenService } from "../services/token.services";
+import config from "../config/config";
+import { returnError, returnSuccess } from "../utils/formatter";
+import { prisma } from "../config/prisma-client";
+
+export const handleLoginWithGoogle = handleAsyncError(
+  async (req, res, next) => {
+    passport.authenticate(
+      "google",
+      { session: false },
+      async (err, user, info) => {
+        if (err || !user) {
+          return res
+            .status(httpStatus.UNAUTHORIZED)
+            .json(returnError("Google authentication failed."));
+        }
+
+        let userIns = await prisma.user.findUnique({
+          where: {
+            email: user.emails[0].value,
+            googleId: user.id,
+          },
+        });
+
+        if (!userIns) {
+          userIns = await prisma.user.create({
+            data: {
+              email: user.emails[0].value,
+              name: user.displayName,
+              googleId: user.id,
+              avatar: user.photos[0].value,
+            },
+          });
+        }
+
+        const { accessToken, refreshToken } =
+          await tokenService.generateAccessTokenAndRefreshToken(userIns.id);
+
+        setRefreshTokenCookie(res, refreshToken);
+
+        const oauthResult = {
+          type: "OAUTH_SUCCESS",
+          payload: {
+            accessToken,
+            user: userIns,
+          },
+        };
+
+        res.send(`
+        <!DOCTYPE html>
+        <html>
+          <body>
+            <script>
+            console.log("start")
+              window.opener.postMessage(${JSON.stringify(oauthResult)}, "${
+          config.FRONTEND_URL
+        }");
+              console.log("end")
+              window.close(); 
+            </script>
+          </body>
+        </html>
+      `);
+      }
+    )(req, res, next);
+  }
+);
+
+export const handleLoginWithMindX = handleAsyncError(async (req, res, next) => {
+  passport.authenticate(
+    "google",
+    { session: false },
+    async (err, user, info) => {
+      if (err || !user) {
+        return res
+          .status(httpStatus.UNAUTHORIZED)
+          .json(returnError("Google authentication failed."));
+      }
+    }
+  )(req, res, next);
+});
+
+export const handleLogout = handleAsyncError(
+  async (req: Request, res: Response) => {
+    const { refreshToken } = req.cookies;
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: config.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    });
+
+    if (refreshToken) {
+      await tokenService.revokeRefreshToken(refreshToken);
+    }
+
+    return res
+      .status(httpStatus.OK)
+      .json(returnSuccess("Logout successful.", null));
+  }
+);
+
+export const handleRefreshToken = handleAsyncError(
+  async (req: Request, res: Response) => {
+    const { refreshToken } = req.cookies;
+
+    if (!refreshToken) {
+      return res
+        .status(httpStatus.UNAUTHORIZED)
+        .json(returnError("Refresh token is missing."));
+    }
+
+    try {
+      const { userId } = await tokenService.verifyRefreshToken(refreshToken);
+      const accessToken = tokenService.generateAccessToken({ userId });
+
+      return res
+        .status(httpStatus.OK)
+        .json(returnSuccess("Token refreshed.", accessToken));
+    } catch (err) {
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: config.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+      });
+
+      return res
+        .status(httpStatus.UNAUTHORIZED)
+        .json(returnError("Invalid or expired refresh token."));
+    }
+  }
+);
+
+const setRefreshTokenCookie = (res: Response, refreshToken: string) => {
+  const cookieOptions = {
+    httpOnly: true,
+    secure: config.NODE_ENV === "production",
+    sameSite: "lax" as "lax",
+    path: "/",
+    maxAge: config.REFRESH_TOKEN_EXPIRES_IN * 1000,
+  };
+  res.cookie("refreshToken", refreshToken, cookieOptions);
+};

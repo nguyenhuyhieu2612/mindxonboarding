@@ -1,68 +1,49 @@
 import { getRefreshTokenKey } from "../utils/key";
-import { ENVIRONMENT_VARIABLES } from "../config/environment-variables";
+import config from "../config/config";
 import redis from "../config/redis-client";
 import jwt from "jsonwebtoken";
 
 class TokenService {
   generateAccessToken(payload: any): string {
-    return jwt.sign(
-      payload,
-      ENVIRONMENT_VARIABLES.SESSION.ACCESS_TOKEN.SECRET,
-      {
-        algorithm: ENVIRONMENT_VARIABLES.JWT.ALGORITHM as jwt.Algorithm,
-        expiresIn: ENVIRONMENT_VARIABLES.SESSION.ACCESS_TOKEN.EXPIRES_IN,
-      }
-    );
+    return jwt.sign(payload, config.ACCESS_TOKEN_SECRET, {
+      algorithm: config.JWT_ALGORITHM as jwt.Algorithm,
+      expiresIn: config.ACCESS_TOKEN_EXPIRES_IN,
+    });
   }
 
   verifyAccessToken(token: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      jwt.verify(
-        token,
-        ENVIRONMENT_VARIABLES.SESSION.ACCESS_TOKEN.SECRET,
-        (err, decoded) => {
-          if (err) {
-            return reject(null);
-          }
-          resolve(decoded);
+      jwt.verify(token, config.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          return reject(null);
         }
-      );
+        resolve(decoded);
+      });
     });
   }
 
   generateRefreshToken(payload: any): string {
-    return jwt.sign(
-      payload,
-      ENVIRONMENT_VARIABLES.SESSION.REFRESH_TOKEN.SECRET,
-      {
-        algorithm: ENVIRONMENT_VARIABLES.JWT.ALGORITHM as jwt.Algorithm,
-        expiresIn: ENVIRONMENT_VARIABLES.SESSION.REFRESH_TOKEN.EXPIRES_IN,
-      }
-    );
+    return jwt.sign(payload, config.REFRESH_TOKEN_SECRET, {
+      algorithm: config.JWT_ALGORITHM as jwt.Algorithm,
+      expiresIn: config.REFRESH_TOKEN_EXPIRES_IN,
+    });
   }
 
   verifyRefreshToken(token: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      jwt.verify(
-        token,
-        ENVIRONMENT_VARIABLES.SESSION.REFRESH_TOKEN.SECRET,
-        (err, decoded) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve(decoded);
+      jwt.verify(token, config.REFRESH_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          return reject(err);
         }
-      );
+        resolve(decoded);
+      });
     });
   }
 
   async saveRefreshToken(userId: string, refreshToken: string): Promise<void> {
     const key = getRefreshTokenKey(refreshToken);
     await redis.hset(key, { userId });
-    await redis.expire(
-      key,
-      ENVIRONMENT_VARIABLES.SESSION.REFRESH_TOKEN.EXPIRES_IN
-    );
+    await redis.expire(key, config.REFRESH_TOKEN_EXPIRES_IN);
   }
 
   async revokeRefreshToken(refreshToken: string): Promise<void> {

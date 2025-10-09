@@ -1,10 +1,19 @@
 import Redis from "ioredis";
-import { ENVIRONMENT_VARIABLES } from "./environment-variables";
+import config from "./config";
+import { logger } from "../utils/logger";
 
 const client = new Redis({
-  host: ENVIRONMENT_VARIABLES.REDIS.HOST,
-  port: ENVIRONMENT_VARIABLES.REDIS.PORT,
-  password: ENVIRONMENT_VARIABLES.REDIS.PASSWORD,
+  host: config.REDIS_HOST,
+  port: config.REDIS_PORT,
+  password: config.REDIS_PASSWORD,
+});
+
+client.on("connect", () => {
+  logger.info("✅ Connected to Redis successfully");
+});
+
+client.on("error", (err) => {
+  logger.error("❌ Failed to connect Redis:", err);
 });
 
 export default client;

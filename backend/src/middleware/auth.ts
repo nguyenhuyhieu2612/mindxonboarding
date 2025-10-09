@@ -1,15 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import { tokenService } from "../services/token.services";
-import HTTP_STATUS from "http-status";
+import httpStatus from "http-status";
 import { returnError } from "../utils/formatter";
-
-export interface AuthRequest extends Request {
-  user?: any;
-  token?: string;
-}
+import { prisma } from "../config/prisma-client";
 
 export const authenticate = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -17,7 +13,7 @@ export const authenticate = async (
 
   if (!headerAuth || !headerAuth.startsWith("Bearer ")) {
     return res
-      .status(HTTP_STATUS.UNAUTHORIZED)
+      .status(httpStatus.UNAUTHORIZED)
       .json(returnError("Please log in to access this resource"));
   }
 
@@ -25,18 +21,20 @@ export const authenticate = async (
 
   if (!token) {
     return res
-      .status(HTTP_STATUS.UNAUTHORIZED)
+      .status(httpStatus.UNAUTHORIZED)
       .json(returnError("Please log in to access this resource"));
   }
 
   const decoded = await tokenService.verifyAccessToken(token);
+  const { userId = null } = decoded;
+  const user = await prisma.user.findUnique({ where: { id: userId } });
 
-  if (!decoded) {
+  if (!user) {
     return res
-      .status(HTTP_STATUS.UNAUTHORIZED)
+      .status(httpStatus.UNAUTHORIZED)
       .json(returnError("User does not exist"));
   }
 
-  req.user = { userId: decoded.userId };
+  req.user = user;
   next();
 };

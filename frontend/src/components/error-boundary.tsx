@@ -41,7 +41,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         <div className="relative flex h-auto min-h-screen w-full flex-col bg-[#fcf8f8] group/design-root overflow-x-hidden">
           <div className="layout-container flex h-full grow flex-col">
             <div className="px-40 flex flex-1 justify-center py-5">
-              <div className="layout-content-container flex flex-col w-[512px] max-w-[512px] py-5 max-w-[960px] flex-1">
+              <div className="layout-content-container flex flex-col w-[512px] py-5 max-w-[960px] flex-1">
                 <h2 className="text-[#1b0d0d] tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-5">
                   Oops! Something went wrong.
                 </h2>

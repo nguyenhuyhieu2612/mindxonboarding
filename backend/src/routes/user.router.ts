@@ -1,19 +1,9 @@
-import { Router, Response } from "express";
-import { handleAsyncError } from "../utils/async";
-import HTTP_STATUS from "http-status";
-import { returnSuccess } from "../utils/formatter";
+import { Router } from "express";
 import { authenticate } from "../middleware/auth";
+import * as userController from "../controllers/user.controller";
 
 const router = Router();
 
-router.get(
-  "/me",
-  authenticate,
-  handleAsyncError(async (req: any, res: Response) => {
-    return res
-      .status(HTTP_STATUS.OK)
-      .json(returnSuccess("User profile retrieved successfully", req.user));
-  })
-);
+router.get("/me", authenticate, userController.handleGetCurrentUser);
 
 export default router;

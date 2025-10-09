@@ -1,7 +1,8 @@
+import useLogin from "@/hooks/use-login";
 import useMindXLogin from "@hooks/use-mindx-login";
 
 export default function Login() {
-  const { actions, error } = useMindXLogin();
+  const { actions, loading, error } = useLogin();
 
   return (
     <div className="px-40 flex flex-1 justify-center py-5">
@@ -17,10 +18,18 @@ export default function Login() {
         <div className="flex justify-center">
           <div className="flex flex-1 gap-3 max-w-[480px] flex-col items-stretch px-4 py-3">
             <button
-              onClick={actions.handleMindXLogin}
-              className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#ec1313] text-[#fcf8f8] text-base font-bold leading-normal tracking-[0.015em] w-full"
+              onClick={actions.handleLoginWithMindX}
+              disabled={loading}
+              className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#ea2a2a] text-[#fcf8f8] text-base font-bold leading-normal tracking-[0.015em] w-full"
             >
               <span className="truncate">Sign in with MindX account</span>
+            </button>
+            <button
+              onClick={actions.handleLoginWithGoogle}
+              disabled={loading}
+              className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#f3e7e7] text-[#1b0e0e] text-base font-bold leading-normal tracking-[0.015em] w-full"
+            >
+              <span className="truncate">Sign in with Google</span>
             </button>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { TokenResponse } from "types/auth.types";
-import { ENVIRONMENT_VARIABLES } from "../config/environment-variables";
+import config from "../config/config";
 import { logger } from "../utils/logger";
 import axios from "axios";
 import jwt from "jsonwebtoken";
@@ -7,16 +7,14 @@ import jwt from "jsonwebtoken";
 class AuthService {
   getAuthorizationURL(state: string): string {
     const params = new URLSearchParams({
-      client_id: ENVIRONMENT_VARIABLES.OPENID.CLIENT_ID,
-      redirect_uri: ENVIRONMENT_VARIABLES.OPENID.REDIRECT_URI,
-      response_type: ENVIRONMENT_VARIABLES.OPENID.RESPONSE_TYPE,
-      scope: ENVIRONMENT_VARIABLES.OPENID.SCOPE,
+      client_id: config.MINDX_CLIENT_ID,
+      redirect_uri: config.MINDX_REDIRECT_URI,
+      scope: config.MINDX_SCOPE.join(" "),
+      response_type: "code",
       state,
     });
 
-    return `${
-      ENVIRONMENT_VARIABLES.OPENID.AUTHORIZATION_ENDPOINT
-    }?${params.toString()}`;
+    return `${config.MINDX_AUTH_URL}?${params.toString()}`;
   }
 
   async exchangeCodeForTokens(code: string): Promise<TokenResponse> {
@@ -24,13 +22,13 @@ class AuthService {
       const params = new URLSearchParams({
         grant_type: "authorization_code",
         code,
-        redirect_uri: ENVIRONMENT_VARIABLES.OPENID.REDIRECT_URI,
-        client_id: ENVIRONMENT_VARIABLES.OPENID.CLIENT_ID,
-        client_secret: ENVIRONMENT_VARIABLES.OPENID.CLIENT_SECRET,
+        redirect_uri: config.MINDX_REDIRECT_URI,
+        client_id: config.MINDX_CLIENT_ID,
+        client_secret: config.MINDX_CLIENT_SECRET,
       });
 
       const response = await axios.post<TokenResponse>(
-        ENVIRONMENT_VARIABLES.OPENID.TOKEN_ENDPOINT,
+        config.MINDX_TOKEN_URL,
         params.toString(),
         {
           headers: {

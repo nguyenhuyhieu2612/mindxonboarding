@@ -1,10 +1,9 @@
 import * as appInsights from "applicationinsights";
-import { ENVIRONMENT_VARIABLES } from "./environment-variables";
+import config from "./config";
 import { logger } from "../utils/logger";
 
 export function initializeAppInsights(): void {
-  const connectionString =
-    ENVIRONMENT_VARIABLES.AZURE.APPLICATIONINSIGHTS_CONNECTION_STRING;
+  const connectionString = config.APPLICATIONINSIGHTS_CONNECTION_STRING;
   if (!connectionString || connectionString.trim() === "") {
     logger.warn(
       "Application Insights connection string not configured. Telemetry collection disabled."
@@ -33,14 +32,14 @@ export function initializeAppInsights(): void {
       process.env.HOSTNAME || process.env.COMPUTERNAME || "local";
 
     appInsights.defaultClient.commonProperties = {
-      environment: ENVIRONMENT_VARIABLES.APP.ENVIRONMENT,
-      version: ENVIRONMENT_VARIABLES.APP.VERSION,
-      service: ENVIRONMENT_VARIABLES.APP.NAME,
+      environment: config.NODE_ENV,
+      version: config.APP_VERSION,
+      service: config.APP_NAME,
     };
 
     logger.info("✅ Application Insights initialized successfully", {
       cloudRole: "mindx-backend-api",
-      environment: ENVIRONMENT_VARIABLES.APP.ENVIRONMENT,
+      environment: config.NODE_ENV,
     });
   } catch (error: any) {
     logger.error("❌ Failed to initialize Application Insights", {
