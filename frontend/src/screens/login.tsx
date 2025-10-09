@@ -1,5 +1,4 @@
 import useLogin from "@/hooks/use-login";
-import useMindXLogin from "@hooks/use-mindx-login";
 
 export default function Login() {
   const { actions, loading, error } = useLogin();
