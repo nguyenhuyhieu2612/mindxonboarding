@@ -20,8 +20,7 @@ export function initializeAppInsights(): void {
       .setAutoCollectDependencies(true)
       .setAutoCollectConsole(false, false)
       .setUseDiskRetryCaching(true)
-      .setSendLiveMetrics(false) // Tạm thời tắt live metrics
-      .setDistributedTracingMode(appInsights.DistributedTracingModes.AI)
+      .setSendLiveMetrics(false)
       .start();
 
     appInsights.defaultClient.context.tags["ai.cloud.role"] =

@@ -23,6 +23,6 @@ router.get("/callback", authController.handleLoginWithMindX);
 
 router.post("/logout", authenticate, authController.handleLogout);
 
-router.get("/refresh", authController.handleRefreshToken);
+router.post("/refresh-token", authController.handleRefreshToken);
 
 export default router;

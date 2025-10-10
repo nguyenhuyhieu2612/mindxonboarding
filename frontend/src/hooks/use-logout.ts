@@ -4,9 +4,7 @@ import { logout } from "@/services/auth";
 import { logoutAccount } from "@/store/auth.slice";
 import { useAppDispatch } from "@/store/hooks";
 import { useNavigate } from "react-router-dom";
-import { AppInsights } from "@/app-insights";
-
-const appInsights = AppInsights.init();
+import { trackEvent, clearAuthenticatedUser } from "@/app-insights";
 
 export default function useLogout() {
   const [loading, setLoading] = React.useState(false);
@@ -18,35 +16,34 @@ export default function useLogout() {
   const handleLogout = React.useCallback(async () => {
     setLoading(true);
     setError(null);
-    appInsights.trackEvent("Auth_Logout_Attempted", {
+
+    trackEvent("auth_logout_attempted", {
       timestamp: new Date().toISOString(),
     });
 
     try {
       const response = await logout();
       if (response.success) {
-        navigate(paths.login);
-        dispatch(logoutAccount());
-        appInsights.trackEvent("Auth_Logout_Succeeded", {
+        trackEvent("auth_logout_success", {
           timestamp: new Date().toISOString(),
         });
+
+        clearAuthenticatedUser();
+
+        navigate(paths.login);
+        dispatch(logoutAccount());
       }
     } catch (error) {
       setError(error as string);
-      appInsights.trackException(
-        error instanceof Error ? error : new Error(String(error)),
-        {
-          action: "logout",
-        }
-      );
 
-      appInsights.trackEvent("Auth_Logout_Failed", {
+      trackEvent("auth_logout_failed", {
         error: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString(),
       });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [navigate, dispatch]);
 
   return {
     loading,

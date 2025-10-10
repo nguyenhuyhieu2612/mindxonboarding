@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ApiResponse } from "./api.types";
 import api, { API_BASE_URL } from "./api";
+import { appInsights } from "@/app-insights";
 
 const root = "/auth";
 
@@ -15,7 +16,10 @@ export const refreshToken = async (): Promise<
     );
     return response.data;
   } catch (error) {
-    console.log("refreshToken error", error);
+    appInsights.trackException({
+      exception: error as Error,
+      properties: {},
+    });
     throw error;
   }
 };

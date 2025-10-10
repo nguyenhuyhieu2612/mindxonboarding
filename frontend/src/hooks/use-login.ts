@@ -4,10 +4,12 @@ import { useAppDispatch } from "@/store/hooks";
 import { useNavigate } from "react-router-dom";
 import { setCredentials } from "@/store/auth.slice";
 import { paths } from "@/constants";
+import { trackEvent, setAuthenticatedUser } from "@/app-insights";
+import { User } from "@/types/user.types";
 
 type OAuthSuccessPayload = {
   accessToken: string;
-  user: any; // Thay bằng User type của bạn nếu có
+  user: User;
 };
 
 type OAuthMessage = {
@@ -29,6 +31,11 @@ export default function useLogin() {
         setLoading(true);
         setError("");
 
+        trackEvent("auth_login_attempted", {
+          provider,
+          method: "oauth-popup",
+        });
+
         const popup = window.open(
           `${API_BASE_URL}/auth/${provider}`,
           "_blank",
@@ -36,8 +43,16 @@ export default function useLogin() {
         );
 
         if (!popup) {
-          setError("Popup blocked by browser");
+          const errorMsg = "Popup blocked by browser";
+          setError(errorMsg);
           setLoading(false);
+
+          trackEvent("auth_login_failed", {
+            provider,
+            reason: "popup_blocked",
+            error: errorMsg,
+          });
+
           return;
         }
 
@@ -50,10 +65,30 @@ export default function useLogin() {
 
           const data = event.data;
           if (data.type === "OAUTH_SUCCESS" && data.payload) {
+            trackEvent("auth_login_success", {
+              provider,
+              userId: data.payload.user?.id?.toString() || "unknown",
+              userEmail: data.payload.user?.email || "unknown",
+            });
+
+            if (data.payload.user?.id) {
+              setAuthenticatedUser(
+                data.payload.user.id.toString(),
+                data.payload.user.email
+              );
+            }
+
             dispatch(setCredentials(data.payload));
             navigate(paths.home);
           } else if (data.type === "OAUTH_ERROR") {
-            setError(data.error || "Authentication failed");
+            const errorMsg = data.error || "Authentication failed";
+            setError(errorMsg);
+
+            trackEvent("auth_login_failed", {
+              provider,
+              reason: "oauth_error",
+              error: errorMsg,
+            });
           }
 
           cleanup();
@@ -61,7 +96,15 @@ export default function useLogin() {
 
         const checkPopupClosed = setInterval(() => {
           if (popup.closed) {
-            setError("Popup closed by user");
+            const errorMsg = "Popup closed by user";
+            setError(errorMsg);
+
+            trackEvent("auth_login_failed", {
+              provider,
+              reason: "popup_closed",
+              error: errorMsg,
+            });
+
             cleanup();
           }
         }, 500);

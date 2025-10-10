@@ -1,12 +1,23 @@
 import useLogin from "@/hooks/use-login";
+import { trackPageView, trackEvent } from "@/app-insights";
+import { useEffect } from "react";
 
 export default function Login() {
   const { actions, loading, error } = useLogin();
 
+  useEffect(() => {
+    trackPageView("Login");
+    trackEvent("page_view", {
+      pageName: "Login",
+      pageType: "authentication",
+    });
+  }, []);
+
   return (
     <div className="px-40 flex flex-1 justify-center py-5">
       <div className="layout-content-container flex flex-col w-[512px] py-5 max-w-[960px] flex-1">
-        <h2 className="text-[#1b0d0d] tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-5">
+        <div className="w-full" style={{ height: "100px" }}></div>
+        <h2 className="text-white tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-5">
           Welcome back
         </h2>
         {error && typeof error === "string" && (
@@ -19,14 +30,14 @@ export default function Login() {
             <button
               onClick={actions.handleLoginWithMindX}
               disabled={loading}
-              className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#ea2a2a] text-[#fcf8f8] text-base font-bold leading-normal tracking-[0.015em] w-full"
+              className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#39e079] text-[#122118] text-base font-bold leading-normal tracking-[0.015em] w-full"
             >
               <span className="truncate">Sign in with MindX account</span>
             </button>
             <button
               onClick={actions.handleLoginWithGoogle}
               disabled={loading}
-              className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#f3e7e7] text-[#1b0e0e] text-base font-bold leading-normal tracking-[0.015em] w-full"
+              className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#264532] text-white text-base font-bold leading-normal tracking-[0.015em] w-full"
             >
               <span className="truncate">Sign in with Google</span>
             </button>

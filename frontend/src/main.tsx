@@ -1,24 +1,32 @@
 // index.tsx
 import "./index.css";
 import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
-import { BrowserRouter } from "react-router-dom";
-import { Provider } from "react-redux";
 import { store } from "./store";
-import { AppInsights } from "@/app-insights.ts";
-import ErrorBoundary from "@components/error-boundary.tsx";
+import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
+import { BrowserRouter } from "react-router-dom";
+import App from "./App.tsx";
+import { reactPlugin } from "./app-insights.ts";
+import {
+  AppInsightsContext,
+  AppInsightsErrorBoundary,
+} from "@microsoft/applicationinsights-react-js";
 
-AppInsights.init();
+import "./app-insights.ts";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <Provider store={store}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </Provider>
-    </ErrorBoundary>
+    <AppInsightsContext.Provider value={reactPlugin}>
+      <AppInsightsErrorBoundary
+        appInsights={reactPlugin}
+        onError={() => <h1>Sorry, something went wrong.</h1>}
+      >
+        <Provider store={store}>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </Provider>
+      </AppInsightsErrorBoundary>
+    </AppInsightsContext.Provider>
   </React.StrictMode>
 );

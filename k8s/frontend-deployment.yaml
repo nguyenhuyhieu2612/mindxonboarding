@@ -26,9 +26,6 @@ spec:
           ports:
             - containerPort: 5173
               name: http
-          envFrom:
-            - configMapRef:
-                name: frontend-config
           resources:
             requests:
               memory: "128Mi"

@@ -41,7 +41,10 @@ class TokenService {
 
   async saveRefreshToken(userId: number, refreshToken: string): Promise<void> {
     const key = getRefreshTokenKey(refreshToken);
-    await redisClient.hset(key, { userId });
+    await redisClient.hset(key, { 
+      userId,
+      loginTime: Date.now().toString() // Lưu timestamp khi login
+    });
     await redisClient.expire(key, config.REFRESH_TOKEN_EXPIRES_IN);
   }
 
