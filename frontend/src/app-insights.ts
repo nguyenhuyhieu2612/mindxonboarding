@@ -9,6 +9,17 @@ const reactPlugin = new ReactPlugin();
 const connectionString = import.meta.env
   .VITE_APPLICATIONINSIGHTS_CONNECTION_STRING;
 
+if (connectionString) {
+  console.info("✅ Application Insights initialized for frontend", {
+    cloudRole: "mindx-frontend",
+    environment: import.meta.env.MODE,
+  });
+} else {
+  console.warn(
+    "⚠️ Application Insights connection string not configured. Frontend telemetry disabled."
+  );
+}
+
 const appInsights = new ApplicationInsights({
   config: {
     connectionString: connectionString,
@@ -45,17 +56,6 @@ appInsights.addTelemetryInitializer((env: ITelemetryItem) => {
     env.tags["ai.cloud.roleInstance"] = window.location.hostname;
   }
 });
-
-if (connectionString) {
-  console.info("✅ Application Insights initialized for frontend", {
-    cloudRole: "mindx-frontend",
-    environment: import.meta.env.MODE,
-  });
-} else {
-  console.warn(
-    "⚠️ Application Insights connection string not configured. Frontend telemetry disabled."
-  );
-}
 
 export { reactPlugin, appInsights };
 
