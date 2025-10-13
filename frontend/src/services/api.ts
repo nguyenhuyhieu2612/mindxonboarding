@@ -7,6 +7,7 @@ import { ApiResponse } from "./api.types";
 import { refreshToken } from "./auth";
 import { store } from "@/store";
 import { logoutAccount, setAccessToken } from "@/store/auth.slice";
+import { trackGA4Event } from "@/lib/analytics";
 
 export const API_BASE_URL =
   (import.meta as any).env?.DEV === true ? "http://localhost:3000" : "/api";
@@ -44,7 +45,13 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
+    trackGA4Event("frontend_error", {
+      error_type: "api_error",
+      message: error.response?.data?.message || "An unknow error occurred",
+      status_code: error.response?.status,
+      url: error.response?.config?.url,
+      fatal: false,
+    });
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       if (isRefreshing) {

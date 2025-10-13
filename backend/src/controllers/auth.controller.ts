@@ -2,14 +2,8 @@ import passport from "passport";
 import httpStatus from "http-status";
 import { prisma, config } from "../config";
 import { Request, Response, NextFunction } from "express";
-import { tokenService } from "../services/token.services";
-import {
-  handleAsyncError,
-  returnError,
-  returnSuccess,
-  trackEvent,
-  trackMetric,
-} from "../utils";
+import { tokenService, telemetryService } from "../services";
+import { ApiError, handleAsyncError, returnSuccess } from "../utils";
 
 export const handleLoginWithGoogle = handleAsyncError(
   async (req, res, next) => {
@@ -18,16 +12,14 @@ export const handleLoginWithGoogle = handleAsyncError(
       { session: false },
       async (err, user, info) => {
         if (err || !user) {
-          return res
-            .status(httpStatus.UNAUTHORIZED)
-            .json(returnError("Google authentication failed."));
+          throw new ApiError(
+            "Google authentication failed.",
+            httpStatus.UNAUTHORIZED
+          );
         }
 
         let userIns = await prisma.user.findUnique({
-          where: {
-            email: user.emails[0].value,
-            googleId: user.id,
-          },
+          where: { googleId: user.id },
         });
 
         if (!userIns) {
@@ -54,17 +46,11 @@ export const handleLoginWithGoogle = handleAsyncError(
           },
         };
 
-        trackEvent("user-login", {
-          id: userIns.id.toString(),
-          name: userIns.name,
-          email: userIns.email,
-          loginMethod: "google-oauth",
-          environment: config.NODE_ENV,
-        });
-
-        trackMetric("user-active", 1, {
-          loginMethod: "google-oauth",
-          environment: config.NODE_ENV,
+        telemetryService.trackEvent("UserLogin", {
+          UserId: userIns.id.toString(),
+          Method: "google",
+          Feature: "Auth",
+          Success: "true",
         });
 
         res.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
@@ -102,7 +88,7 @@ export const handleLoginWithGoogle = handleAsyncError(
             </script>
           </body>
           </html>
-`);
+        `);
       }
     )(req, res, next);
   }
@@ -114,9 +100,10 @@ export const handleLoginWithMindX = handleAsyncError(async (req, res, next) => {
     { session: false },
     async (err, user, info) => {
       if (err || !user) {
-        return res
-          .status(httpStatus.UNAUTHORIZED)
-          .json(returnError("Google authentication failed."));
+        throw new ApiError(
+          "MindX authentication failed.",
+          httpStatus.UNAUTHORIZED
+        );
       }
     }
   )(req, res, next);
@@ -135,14 +122,13 @@ export const handleLogout = handleAsyncError(
 
     if (refreshToken) {
       await tokenService.revokeRefreshToken(refreshToken);
+      telemetryService.trackEvent("UserLogout", {
+        UserId: (req.user as any).id.toString(),
+        Method: "manual",
+        Feature: "Auth",
+        Success: "true",
+      });
     }
-
-    trackEvent("user-logout", {
-      id: (req.user as any).id.toString(),
-      name: (req.user as any).name,
-      email: (req.user as any).email,
-      environment: config.NODE_ENV,
-    });
 
     return res
       .status(httpStatus.OK)
@@ -155,15 +141,17 @@ export const handleRefreshToken = handleAsyncError(
     const { refreshToken } = req.cookies;
 
     if (!refreshToken) {
-      return res
-        .status(httpStatus.UNAUTHORIZED)
-        .json(returnError("Refresh token is missing."));
+      throw new ApiError("Refresh token not found.", httpStatus.UNAUTHORIZED);
     }
 
     try {
       const { userId } = await tokenService.verifyRefreshToken(refreshToken);
       const accessToken = tokenService.generateAccessToken({ userId });
-
+      telemetryService.trackEvent("RefreshToken", {
+        UserId: userId.toString(),
+        Feature: "Auth",
+        Success: "true",
+      });
       return res
         .status(httpStatus.OK)
         .json(returnSuccess("Token refreshed.", accessToken));
@@ -174,10 +162,13 @@ export const handleRefreshToken = handleAsyncError(
         sameSite: "lax",
         path: "/",
       });
+      telemetryService.trackEvent("RefreshToken", {
+        UserId: "unknow",
+        Feature: "Auth",
+        Success: "false",
+      });
 
-      return res
-        .status(httpStatus.UNAUTHORIZED)
-        .json(returnError("Invalid or expired refresh token."));
+      throw new ApiError("Invalid refresh token.", httpStatus.UNAUTHORIZED);
     }
   }
 );

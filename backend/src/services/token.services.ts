@@ -41,15 +41,15 @@ class TokenService {
 
   async saveRefreshToken(userId: number, refreshToken: string): Promise<void> {
     const key = getRefreshTokenKey(refreshToken);
-    await redisClient.hset(key, { 
-      userId,
-      loginTime: Date.now().toString() // Lưu timestamp khi login
-    });
+
+    await redisClient.hset(key, { userId, loginTime: Date.now().toString() });
     await redisClient.expire(key, config.REFRESH_TOKEN_EXPIRES_IN);
   }
 
   async revokeRefreshToken(refreshToken: string): Promise<void> {
-    await redisClient.del(getRefreshTokenKey(refreshToken));
+    const key = getRefreshTokenKey(refreshToken);
+
+    await redisClient.del(key);
   }
 
   async generateAccessTokenAndRefreshToken(userId: number): Promise<{
@@ -61,27 +61,6 @@ class TokenService {
     const refreshToken = this.generateRefreshToken(payload);
     await this.saveRefreshToken(userId, refreshToken);
     return { accessToken, refreshToken };
-  }
-
-  async blacklistAccessToken(token: string): Promise<void> {
-    try {
-      const decoded = await this.verifyAccessToken(token);
-      const key = `blacklist:${token}`;
-      const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
-
-      if (expiresIn > 0) {
-        await redisClient.set(key, "1");
-        await redisClient.expire(key, expiresIn);
-      }
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async isTokenBlacklisted(token: string): Promise<boolean> {
-    const key = `blacklist:${token}`;
-    const result = await redisClient.get(key);
-    return result !== null;
   }
 }
 

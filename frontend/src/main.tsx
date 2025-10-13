@@ -11,8 +11,10 @@ import {
   AppInsightsContext,
   AppInsightsErrorBoundary,
 } from "@microsoft/applicationinsights-react-js";
+import { initializeGA4 } from "@/lib/analytics.ts";
 
 import "./app-insights.ts";
+initializeGA4();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

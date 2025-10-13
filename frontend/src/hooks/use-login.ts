@@ -4,8 +4,10 @@ import { useAppDispatch } from "@/store/hooks";
 import { useNavigate } from "react-router-dom";
 import { setCredentials } from "@/store/auth.slice";
 import { paths } from "@/constants";
-import { trackEvent, setAuthenticatedUser } from "@/app-insights";
 import { User } from "@/types/user.types";
+import { useGA4 } from "./use-ga4";
+import { setGA4User } from "@/lib/analytics";
+import { useAI } from "./use-ai";
 
 type OAuthSuccessPayload = {
   accessToken: string;
@@ -25,16 +27,19 @@ export default function useLogin() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
+  const { setUserProperties, setUser, trackEvent: trackGA4Event } = useGA4();
+  const {
+    trackEvent: trackAIEvent,
+    trackException: trackAIException,
+    setAuthenticatedUser: setAIAuthenticatedUser,
+    clearAuthenticatedUser: clearAIAuthenticatedUser,
+  } = useAI();
+
   const createOAuthLoginHandler = React.useCallback(
     (provider: string) => {
       return async () => {
         setLoading(true);
         setError("");
-
-        trackEvent("auth_login_attempted", {
-          provider,
-          method: "oauth-popup",
-        });
 
         const popup = window.open(
           `${API_BASE_URL}/auth/${provider}`,
@@ -47,10 +52,10 @@ export default function useLogin() {
           setError(errorMsg);
           setLoading(false);
 
-          trackEvent("auth_login_failed", {
-            provider,
-            reason: "popup_blocked",
-            error: errorMsg,
+          trackAIException(new Error(errorMsg), {
+            Method: provider,
+            Page: "Login",
+            Feature: "OAuth",
           });
 
           return;
@@ -64,19 +69,26 @@ export default function useLogin() {
           if (event.origin !== expectedOrigin) return;
 
           const data = event.data;
-          if (data.type === "OAUTH_SUCCESS" && data.payload) {
-            trackEvent("auth_login_success", {
-              provider,
-              userId: data.payload.user?.id?.toString() || "unknown",
-              userEmail: data.payload.user?.email || "unknown",
-            });
 
-            if (data.payload.user?.id) {
-              setAuthenticatedUser(
-                data.payload.user.id.toString(),
-                data.payload.user.email
-              );
-            }
+          if (data.type === "OAUTH_SUCCESS" && data.payload) {
+            const { user } = data.payload;
+
+            trackAIEvent("UserLogin", {
+              UserId: user.id.toString(),
+              Method: provider,
+              Page: "Login",
+              Feature: "OAuth",
+            });
+            setAIAuthenticatedUser(user.id.toString());
+            trackGA4Event("login", {
+              method: provider,
+            });
+            setUser(user.id.toString());
+            setUserProperties({
+              user_role: "student",
+              plan_type: "free",
+              language_preference: "vi",
+            });
 
             dispatch(setCredentials(data.payload));
             navigate(paths.home);
@@ -84,10 +96,17 @@ export default function useLogin() {
             const errorMsg = data.error || "Authentication failed";
             setError(errorMsg);
 
-            trackEvent("auth_login_failed", {
-              provider,
-              reason: "oauth_error",
-              error: errorMsg,
+            trackAIException(new Error(errorMsg), {
+              Method: provider,
+              Page: "Login",
+              Feature: "OAuth",
+            });
+            clearAIAuthenticatedUser();
+            setGA4User(null);
+            setUserProperties({
+              user_role: "guest",
+              plan_type: "free",
+              language_preference: "vi",
             });
           }
 
@@ -99,10 +118,10 @@ export default function useLogin() {
             const errorMsg = "Popup closed by user";
             setError(errorMsg);
 
-            trackEvent("auth_login_failed", {
-              provider,
-              reason: "popup_closed",
-              error: errorMsg,
+            trackAIException(new Error(errorMsg), {
+              Method: provider,
+              Page: "Login",
+              Feature: "OAuth",
             });
 
             cleanup();

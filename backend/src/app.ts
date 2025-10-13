@@ -1,20 +1,23 @@
-import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import morgan from "morgan";
-import compression from "compression";
-import cookieParser from "cookie-parser";
-import { logger, returnError } from "./utils";
-import httpStatus from "http-status";
 import router from "./routes";
+import { logger } from "./utils";
 import { config } from "./config";
+import compression from "compression";
 import session from "express-session";
+import cookieParser from "cookie-parser";
+import express, { Request, Response } from "express";
+import { handleError, handleNotFound } from "./controllers";
+import { addCorrelationId, errorLoggingMiddleware } from "./middleware";
 
 const app = express();
+
 const corsOptions = {
   origin: config.CORS_ORIGIN,
   methods: config.CORS_METHODS,
   credentials: config.CORS_CREDENTIALS,
 };
+
 const sessionOptions = {
   secret: config.ACCESS_TOKEN_SECRET,
   resave: false,
@@ -31,6 +34,9 @@ app.use(morgan("combined"));
 app.use(compression());
 app.use(cookieParser());
 app.use(session(sessionOptions));
+
+app.use(addCorrelationId);
+
 app.use(router);
 
 app.get("/health", (req: Request, res: Response) => {
@@ -43,17 +49,8 @@ app.get("/health", (req: Request, res: Response) => {
   });
 });
 
-app.use((req: Request, res: Response) => {
-  res
-    .status(httpStatus.NOT_FOUND)
-    .json(returnError(`Route not found - ${req.originalUrl}`));
-});
-
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  logger.error("Unhandled error:", err);
-  res
-    .status(httpStatus.INTERNAL_SERVER_ERROR)
-    .json(returnError("Something went wrong"));
-});
+app.use(handleNotFound);
+app.use(errorLoggingMiddleware);
+app.use(handleError);
 
 export default app;

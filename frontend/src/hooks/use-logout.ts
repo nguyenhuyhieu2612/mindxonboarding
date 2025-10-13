@@ -2,9 +2,10 @@ import React from "react";
 import { paths } from "@/constants";
 import { logout } from "@/services/auth";
 import { logoutAccount } from "@/store/auth.slice";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useNavigate } from "react-router-dom";
-import { trackEvent, clearAuthenticatedUser } from "@/app-insights";
+import { useGA4 } from "./use-ga4";
+import { useAI } from "./use-ai";
 
 export default function useLogout() {
   const [loading, setLoading] = React.useState(false);
@@ -13,32 +14,52 @@ export default function useLogout() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
+  const { user } = useAppSelector((state) => state.auth);
+  const { setUser, setUserProperties, trackEvent: trackGA4Event } = useGA4();
+  const {
+    trackEvent: trackAIEvent,
+    trackException: trackAIException,
+    clearAuthenticatedUser: clearAIAuthenticatedUser,
+  } = useAI();
+
   const handleLogout = React.useCallback(async () => {
     setLoading(true);
     setError(null);
 
-    trackEvent("auth_logout_attempted", {
-      timestamp: new Date().toISOString(),
-    });
-
     try {
       const response = await logout();
-      if (response.success) {
-        trackEvent("auth_logout_success", {
-          timestamp: new Date().toISOString(),
+
+      if (response?.success) {
+        trackAIEvent("UserLogout", {
+          UserId: user!.id.toString(),
+          Method: "manual",
+          Page: "Logout",
+          Feature: "Auth",
+        });
+        trackGA4Event("logout", {
+          method: "manual",
+        });
+        setUser(null);
+        setUserProperties({
+          user_role: "guest",
+          plan_type: "free",
+          language_preference: "vi",
         });
 
-        clearAuthenticatedUser();
+        clearAIAuthenticatedUser();
+        dispatch(logoutAccount());
 
         navigate(paths.login);
-        dispatch(logoutAccount());
+      } else {
+        throw new Error("Logout response was not successful");
       }
-    } catch (error) {
-      setError(error as string);
+    } catch (err) {
+      setError(err as string);
 
-      trackEvent("auth_logout_failed", {
-        error: error instanceof Error ? error.message : String(error),
-        timestamp: new Date().toISOString(),
+      trackAIException(new Error(err as string), {
+        Method: "manual",
+        Page: "Logout",
+        Feature: "Auth",
       });
     } finally {
       setLoading(false);

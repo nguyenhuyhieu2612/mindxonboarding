@@ -15,29 +15,50 @@ export function initializeAppInsights(): void {
     appInsights
       .setup(connectionString)
       .setAutoCollectRequests(true)
-      .setAutoCollectPerformance(true, false)
+      .setAutoCollectPerformance(true, true)
       .setAutoCollectExceptions(true)
       .setAutoCollectDependencies(true)
-      .setAutoCollectConsole(false, false)
+      .setAutoCollectConsole(true, true)
       .setUseDiskRetryCaching(true)
-      .setSendLiveMetrics(false)
+      .setSendLiveMetrics(true)
+      .setDistributedTracingMode(appInsights.DistributedTracingModes.AI_AND_W3C)
       .start();
 
-    appInsights.defaultClient.context.tags["ai.cloud.role"] =
-      "mindx-backend-api";
-    appInsights.defaultClient.context.tags["ai.cloud.roleInstance"] =
-      process.env.HOSTNAME || process.env.COMPUTERNAME || "local";
+    appInsights.defaultClient.context.tags[
+      appInsights.defaultClient.context.keys.cloudRole
+    ] = "mindx-backend-api";
+    appInsights.defaultClient.context.tags[
+      appInsights.defaultClient.context.keys.cloudRoleInstance
+    ] = process.env.HOSTNAME || process.env.COMPUTERNAME || "local";
 
-    appInsights.defaultClient.commonProperties = {
-      environment: config.NODE_ENV,
-      version: config.APP_VERSION,
-      service: config.APP_NAME,
-    };
+    appInsights.defaultClient.addTelemetryProcessor((envelope) => {
+      const commonProps = {
+        Environment: config.NODE_ENV,
+        Service: config.APP_NAME,
+        Version: config.APP_VERSION,
+        Hostname:
+          process.env.HOSTNAME || process.env.COMPUTERNAME || "localhost",
+      };
 
-    logger.info("✅ Application Insights initialized successfully", {
-      cloudRole: "mindx-backend-api",
-      environment: config.NODE_ENV,
+      if (!envelope.data || !envelope.data.baseData) return true;
+
+      if (!envelope.data.baseData.properties) {
+        envelope.data.baseData.properties = {};
+      }
+
+      const properties = envelope.data.baseData.properties;
+
+      // Merge common properties (existing properties take precedence)
+      Object.keys(commonProps).forEach((key) => {
+        if (!(key in properties)) {
+          properties[key] = commonProps[key as keyof typeof commonProps];
+        }
+      });
+
+      return true;
     });
+
+    logger.info("✅ Application Insights initialized successfully");
   } catch (error: any) {
     logger.error("❌ Failed to initialize Application Insights", {
       error: error.message,

@@ -7,8 +7,9 @@ This document illustrates the enhanced architecture after implementing comprehen
 ## Architecture Overview
 
 Week 2 adds observability and analytics layers to the existing full-stack application from Week 1:
+
 - **Production Monitoring:** Azure Application Insights tracking the Four Golden Signals
-- **Product Analytics:** Google Analytics 4 for user behavior and business metrics  
+- **Product Analytics:** Google Analytics 4 for user behavior and business metrics
 - **Alerting System:** Critical alerts via email and Azure mobile app
 - **Problem Discovery:** Separate prototype branch for innovation experiments
 
@@ -33,8 +34,8 @@ Week 2 adds observability and analytics layers to the existing full-stack applic
 │  │  │   (CPU/RAM/     │  │ • Debug Traces  │  │   <99%          │              │   │
 │  │  │   Disk)         │  │                 │  │ • P95 >5s       │              │   │
 │  │  └─────────────────┘  └─────────────────┘  │ • Errors >5%    │              │   │
-│  │           ▲                    ▲            │ • CPU >80%      │              │   │
-│  │           │                    │            └─────────────────┘              │   │
+│  │           ▲                    ▲           │ • CPU >80%      │              │   │
+│  │           │                    │           └─────────────────┘              │   │
 │  │           └────────────────────┴──────────────────┐                          │   │
 │  │                                                    │                          │   │
 │  │  ┌──────────────────────────────────────────────────────────────────────────┐ │   │
@@ -315,19 +316,23 @@ USER INTERACTIONS                           SYSTEM METRICS
 Week 2 maintains the Week 1 infrastructure while adding monitoring layers:
 
 ### No Infrastructure Changes Required
+
 - Same AKS cluster configuration
-- Same ingress and service setup  
+- Same ingress and service setup
 - Same authentication flow
 - Same domain and SSL configuration
 
 ### SDK Integration Only
+
 1. **Backend Changes:**
+
    - Add Application Insights SDK to package.json
    - Initialize SDK with instrumentation key
    - Add custom logging statements
    - No architectural changes needed
 
 2. **Frontend Changes:**
+
    - Add GA4 and App Insights JS SDKs
    - Initialize in React app entry point
    - Add event tracking to components
@@ -339,6 +344,7 @@ Week 2 maintains the Week 1 infrastructure while adding monitoring layers:
    - No new services or deployments needed
 
 ### Monitoring Resource Creation
+
 - Application Insights resource (Azure Portal)
 - Log Analytics workspace (linked to App Insights)
 - Google Analytics 4 property (GA Console)
@@ -347,18 +353,21 @@ Week 2 maintains the Week 1 infrastructure while adding monitoring layers:
 ## Security & Compliance Considerations
 
 ### Data Privacy
+
 - PII masking in Application Insights logs
 - User consent for Google Analytics tracking
 - GDPR compliance for EU users
 - Data retention policies configuration
 
 ### Access Control
+
 - Role-based access to monitoring dashboards
 - Separate read-only accounts for stakeholders
 - Audit logs for configuration changes
 - Secure storage of instrumentation keys
 
 ### Cost Management
+
 - Application Insights data ingestion limits
 - Log retention period optimization
 - Sampling configuration for high-traffic
@@ -367,18 +376,21 @@ Week 2 maintains the Week 1 infrastructure while adding monitoring layers:
 ## Collaboration Requirements
 
 ### 🔧 DevOps Team
+
 - Create Application Insights resource
 - Configure Log Analytics workspace
 - Set up alert action groups
 - Provide monitoring access permissions
 
 ### 👨‍💻 Development Team
+
 - Instrument application code
 - Define custom events and metrics
 - Create monitoring dashboards
 - Build prototype solutions
 
 ### 📊 Business Stakeholders
+
 - Access to GA4 reports
 - Review problem proposals
 - Provide prototype feedback
@@ -387,18 +399,21 @@ Week 2 maintains the Week 1 infrastructure while adding monitoring layers:
 ## Success Metrics
 
 ### Technical Metrics
+
 - 100% of API endpoints monitored
 - < 1 minute alert notification time
 - All Golden Signals tracked
 - Zero monitoring blind spots
 
 ### Business Metrics
+
 - User engagement tracked
 - Conversion events defined
 - Feature adoption measured
 - Problem proposals validated
 
 ### Operational Metrics
+
 - Mean time to detection (MTTD) < 5 minutes
 - Alert accuracy > 95% (low false positives)
 - Dashboard load time < 3 seconds

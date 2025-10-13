@@ -1,17 +1,7 @@
 import useLogin from "@/hooks/use-login";
-import { trackPageView, trackEvent } from "@/app-insights";
-import { useEffect } from "react";
 
-export default function Login() {
+export const Login = () => {
   const { actions, loading, error } = useLogin();
-
-  useEffect(() => {
-    trackPageView("Login");
-    trackEvent("page_view", {
-      pageName: "Login",
-      pageType: "authentication",
-    });
-  }, []);
 
   return (
     <div className="px-40 flex flex-1 justify-center py-5">
@@ -46,4 +36,4 @@ export default function Login() {
       </div>
     </div>
   );
-}
+};

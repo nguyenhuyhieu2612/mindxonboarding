@@ -11,9 +11,7 @@ const connectionString = import.meta.env
 
 const appInsights = new ApplicationInsights({
   config: {
-    connectionString:
-      connectionString ||
-      "InstrumentationKey=23866d56-5506-435e-88fd-8bdba408025e;IngestionEndpoint=https://eastus-8.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus.livediagnostics.monitor.azure.com/;ApplicationId=a2fc9fa4-e91d-4b4b-ae89-f0055b224004",
+    connectionString: connectionString,
     // @ts-ignore - Type compatibility issue between plugin versions
     extensions: [reactPlugin],
     enableAutoRouteTracking: true,
@@ -61,7 +59,7 @@ if (connectionString) {
 
 export { reactPlugin, appInsights };
 
-export const trackEvent = (
+export const trackAIEvent = (
   name: string,
   properties?: { [key: string]: string },
   measurements?: { [key: string]: number }
@@ -70,22 +68,15 @@ export const trackEvent = (
     name,
     properties: {
       ...properties,
-      environment: import.meta.env.MODE,
-      timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
+      Environment: import.meta.env.MODE,
+      UserAgent: navigator.userAgent,
+      Timestamp: new Date().toISOString(),
     },
     measurements,
   });
 };
 
-export const trackPageView = (name: string, url?: string) => {
-  appInsights.trackPageView({
-    name,
-    uri: url || window.location.href,
-  });
-};
-
-export const trackException = (
+export const trackAIException = (
   error: Error,
   properties?: { [key: string]: string }
 ) => {
@@ -93,14 +84,14 @@ export const trackException = (
     exception: error,
     properties: {
       ...properties,
-      userAgent: navigator.userAgent,
-      timestamp: new Date().toISOString(),
-      environment: import.meta.env.MODE,
+      Environment: import.meta.env.MODE,
+      UserAgent: navigator.userAgent,
+      Timestamp: new Date().toISOString(),
     },
   });
 };
 
-export const trackMetric = (
+export const trackAIMetric = (
   name: string,
   value: number,
   properties?: { [key: string]: string }
@@ -108,25 +99,20 @@ export const trackMetric = (
   appInsights.trackMetric({
     name,
     average: value,
-    properties,
+    properties: {
+      ...properties,
+      Environment: import.meta.env.MODE,
+      UserAgent: navigator.userAgent,
+      Timestamp: new Date().toISOString(),
+    },
   });
 };
 
-export const trackUserAction = (
-  action: string,
-  properties?: { [key: string]: string }
-) => {
-  trackEvent("user_action", {
-    action,
-    ...properties,
-  });
-};
-
-export const setAuthenticatedUser = (userId: string, accountId?: string) => {
+export const setAIAuthenticatedUser = (userId: string, accountId?: string) => {
   appInsights.setAuthenticatedUserContext(userId, accountId, true);
 };
 
-export const clearAuthenticatedUser = () => {
+export const clearAIAuthenticatedUser = () => {
   appInsights.clearAuthenticatedUserContext();
 };
 
