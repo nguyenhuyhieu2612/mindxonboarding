@@ -11,6 +11,8 @@ env:
   AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
   AKS_RESOURCE_GROUP: ${{ secrets.AKS_RESOURCE_GROUP }}
   CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  VITE_APPLICATIONINSIGHTS_CONNECTION_STRING: ${{ secrets.VITE_APPLICATIONINSIGHTS_CONNECTION_STRING }}
+  VITE_GA4_MEASUREMENT_ID: ${{ secrets.VITE_GA4_MEASUREMENT_ID }}
   NAMESPACE: mindx-app
   BACKEND_DEPLOYMENT: backend
   FRONTEND_DEPLOYMENT: frontend
@@ -47,6 +49,12 @@ jobs:
       - name: Build and Push Frontend Image
         run: |
           cd frontend
+
+          cat <<EOF > .env
+          VITE_APPLICATIONINSIGHTS_CONNECTION_STRING='${{ env.VITE_APPLICATIONINSIGHTS_CONNECTION_STRING }}'
+          VITE_GA4_MEASUREMENT_ID='${{ env.VITE_GA4_MEASUREMENT_ID }}'
+          EOF
+
           IMAGE_TAG="${{ env.ACR_NAME }}.azurecr.io/frontend:latest"
           IMAGE_TAG_SHA="${{ env.ACR_NAME }}.azurecr.io/frontend:${{ github.sha }}"
 
