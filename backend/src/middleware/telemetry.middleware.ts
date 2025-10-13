@@ -1,5 +1,5 @@
+import { randomUUID } from "crypto";
 import { NextFunction, Request, Response } from "express";
-import { v4 as uuidv4 } from "uuid";
 import { telemetryService } from "../services";
 import { ApiError } from "../utils";
 import { config } from "../config";
@@ -12,7 +12,7 @@ export const addCorrelationId = (
   const correlationId =
     (req.headers["x-correlation-id"] as string) ||
     (req.headers["x-request-id"] as string) ||
-    uuidv4();
+    randomUUID();
 
   res.setHeader("X-Correlation-ID", correlationId);
 
