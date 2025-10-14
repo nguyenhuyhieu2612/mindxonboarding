@@ -18,13 +18,6 @@ export const Login = () => {
         <div className="flex justify-center">
           <div className="flex flex-1 gap-3 max-w-[480px] flex-col items-stretch px-4 py-3">
             <button
-              onClick={actions.handleLoginWithMindX}
-              disabled={loading}
-              className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#39e079] text-[#122118] text-base font-bold leading-normal tracking-[0.015em] w-full"
-            >
-              <span className="truncate">Sign in with MindX account</span>
-            </button>
-            <button
               onClick={actions.handleLoginWithGoogle}
               disabled={loading}
               className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#264532] text-white text-base font-bold leading-normal tracking-[0.015em] w-full"
