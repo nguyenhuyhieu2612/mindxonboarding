@@ -4,9 +4,9 @@ import {
   SystemMessage,
   AIMessage,
 } from "@langchain/core/messages";
-import { config } from "@/config";
-import { logger } from "@/utils/logger";
-import { telemetryService } from "@/services";
+import { config } from "../config";
+import { logger } from "../utils";
+import { telemetryService } from "../services";
 
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
@@ -41,7 +41,6 @@ function toLangChainMessages(messages: ChatMessage[]) {
     return new HumanMessage(msg.content);
   });
 }
-
 
 /**
  * Generate streaming chat completion
@@ -105,4 +104,3 @@ export async function* generateStreamingChatCompletion(
     throw error;
   }
 }
-

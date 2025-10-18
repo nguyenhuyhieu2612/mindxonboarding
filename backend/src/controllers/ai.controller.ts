@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
 import httpStatus from "http-status";
-import { generateStreamingChatCompletion } from "@/services/ai.service";
-import { logger, ApiError } from "@/utils";
-import { config } from "@/config";
+import { generateStreamingChatCompletion } from "../services";
+import { logger, ApiError } from "../utils";
+import { config } from "../config";
 import {
   StreamingChatRequest,
   ChatMessage,
   StreamingChunk,
-} from "@/types/ai.types";
+} from "../types/ai.types";
 
 /**
  * Streaming chat completion endpoint
