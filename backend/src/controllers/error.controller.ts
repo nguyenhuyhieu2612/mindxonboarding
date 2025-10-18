@@ -10,6 +10,7 @@ export const handleError = (
 ) => {
   const statusCode = error.statusCode || 500;
   const message = error.message || "Something went wrong";
+  console.log("falkbfaklbfăklkbl");
   return res
     .status(statusCode)
     .json(

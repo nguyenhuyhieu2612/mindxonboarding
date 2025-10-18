@@ -1,0 +1,221 @@
+### AI Chat API Tests
+### Make sure to:
+### 1. Start the backend server: npm run dev
+### 2. Get a valid JWT token from /auth/login
+### 3. Replace YOUR_JWT_TOKEN with the actual token
+### 4. Ensure OPENROUTER_API_KEY is set in your .env file
+
+@baseUrl = http://localhost:3000
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc2MDQ5ODE5MSwiZXhwIjoxNzYwNDk5MDkxfQ.cx_xcdqWZW5b1bA9VXu2tE3BJsJ7BjUPbBllBXcyjjY
+### ============================================
+### Test AI Service Connection
+### ============================================
+GET {{baseUrl}}/ai/test
+Authorization: Bearer {{authToken}}
+
+### ============================================
+### Get AI Configuration
+### ============================================
+GET {{baseUrl}}/ai/config
+Authorization: Bearer {{authToken}}
+
+### ============================================
+### Standard Chat Completion (Non-Streaming)
+### ============================================
+POST {{baseUrl}}/ai/chat
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "message": "Hello! Can you explain what TypeScript is in one sentence?"
+}
+
+### ============================================
+### Chat with Custom System Prompt
+### ============================================
+POST {{baseUrl}}/ai/chat
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "message": "What is Node.js?",
+  "systemPrompt": "You are a helpful programming tutor. Explain concepts clearly and concisely."
+}
+
+### ============================================
+### Chat with Conversation History
+### ============================================
+POST {{baseUrl}}/ai/chat
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "message": "What are the main advantages?",
+  "conversationHistory": [
+    {
+      "role": "user",
+      "content": "Tell me about TypeScript"
+    },
+    {
+      "role": "assistant",
+      "content": "TypeScript is a strongly typed programming language that builds on JavaScript, adding static type definitions."
+    }
+  ]
+}
+
+### ============================================
+### Chat with Custom Model Parameters
+### ============================================
+POST {{baseUrl}}/ai/chat
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "message": "Write a short haiku about coding",
+  "temperature": 0.9,
+  "maxTokens": 100
+}
+
+### ============================================
+### Streaming Chat Completion
+### ============================================
+### Note: Streaming responses will show real-time data
+### Use a tool that supports Server-Sent Events to see streaming
+POST {{baseUrl}}/ai/chat/stream
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "message": "Tell me an interesting fact about artificial intelligence"
+}
+
+### ============================================
+### Streaming Chat with System Prompt
+### ============================================
+POST {{baseUrl}}/ai/chat/stream
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "message": "Explain recursion",
+  "systemPrompt": "You are a patient teacher explaining programming concepts to beginners."
+}
+
+### ============================================
+### Streaming Chat with History
+### ============================================
+POST {{baseUrl}}/ai/chat/stream
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "message": "Can you give me an example?",
+  "conversationHistory": [
+    {
+      "role": "user",
+      "content": "What is a closure in JavaScript?"
+    },
+    {
+      "role": "assistant",
+      "content": "A closure is a function that has access to variables from its outer scope even after the outer function has returned."
+    }
+  ]
+}
+
+### ============================================
+### Error Case: Empty Message
+### ============================================
+POST {{baseUrl}}/ai/chat
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "message": ""
+}
+
+### ============================================
+### Error Case: Missing Message
+### ============================================
+POST {{baseUrl}}/ai/chat
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "systemPrompt": "You are helpful"
+}
+
+### ============================================
+### Error Case: No Authentication
+### ============================================
+POST {{baseUrl}}/ai/chat
+Content-Type: application/json
+
+{
+  "message": "Hello"
+}
+
+### ============================================
+### Production Endpoint Tests
+### ============================================
+
+@prodUrl = https://hieunh01.mindx.edu.vn
+@prodToken = YOUR_PRODUCTION_TOKEN
+
+### Test Production AI Connection
+GET {{prodUrl}}/ai/test
+Authorization: Bearer {{prodToken}}
+
+### Production Chat
+POST {{prodUrl}}/ai/chat
+Content-Type: application/json
+Authorization: Bearer {{prodToken}}
+
+{
+  "message": "Hello from production!"
+}
+
+### ============================================
+### Performance Testing
+### ============================================
+
+### Quick Response Test (Low Tokens)
+POST {{baseUrl}}/ai/chat
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "message": "Say 'Hello'",
+  "maxTokens": 10
+}
+
+### Long Response Test (High Tokens)
+POST {{baseUrl}}/ai/chat
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "message": "Write a detailed explanation of microservices architecture",
+  "maxTokens": 1000
+}
+
+### Creative Response (High Temperature)
+POST {{baseUrl}}/ai/chat
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "message": "Generate a creative story opening",
+  "temperature": 1.2,
+  "maxTokens": 200
+}
+
+### Deterministic Response (Low Temperature)
+POST {{baseUrl}}/ai/chat
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "message": "What is 2 + 2?",
+  "temperature": 0.1,
+  "maxTokens": 50
+}

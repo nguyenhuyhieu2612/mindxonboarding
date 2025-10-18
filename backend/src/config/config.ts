@@ -28,6 +28,12 @@ const schema = z.object({
 
   APPLICATIONINSIGHTS_CONNECTION_STRING: z.string().optional(),
 
+  // Google Gemini AI
+  GOOGLE_AI_API_KEY: z.string().min(1, "GOOGLE_AI_API_KEY is required"),
+  AI_MODEL: z.string().default("gemini-2.0-flash-exp"),
+  AI_MAX_TOKENS: z.coerce.number().default(8192),
+  AI_TEMPERATURE: z.coerce.number().default(0.7),
+
   POSTGRES_HOST: z.string().min(1, "POSTGRES_HOST is required"),
   POSTGRES_PORT: z.coerce.number().default(5432),
   POSTGRES_USER: z.string().min(1, "POSTGRES_USER is required"),
@@ -91,6 +97,12 @@ export const config = {
 
   APPLICATIONINSIGHTS_CONNECTION_STRING:
     raw.APPLICATIONINSIGHTS_CONNECTION_STRING,
+
+  // Google Gemini AI
+  GOOGLE_AI_API_KEY: raw.GOOGLE_AI_API_KEY,
+  AI_MODEL: raw.AI_MODEL,
+  AI_MAX_TOKENS: raw.AI_MAX_TOKENS,
+  AI_TEMPERATURE: raw.AI_TEMPERATURE,
 
   POSTGRES_HOST: raw.POSTGRES_HOST,
   POSTGRES_PORT: raw.POSTGRES_PORT,

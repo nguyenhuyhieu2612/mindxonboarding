@@ -14,7 +14,7 @@ class TokenService {
     return new Promise((resolve, reject) => {
       jwt.verify(token, config.ACCESS_TOKEN_SECRET, (err, decoded) => {
         if (err) {
-          return reject(null);
+          return reject(err); // ← Reject with error, not null!
         }
         resolve(decoded);
       });

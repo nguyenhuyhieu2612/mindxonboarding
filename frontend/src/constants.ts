@@ -3,11 +3,13 @@ export const paths = {
   login: "/login",
   faq: "/faq",
   profile: "/profile",
+  chat: "/chat",
 };
 
 export const headerLinks = [
   { id: "hl-1", link: paths.home, text: "Trang chủ" },
   { id: "hl-2", link: paths.faq, text: "Câu hỏi thường gặp" },
+  { id: "hl-3", link: paths.chat, text: "AI Chat" },
 ];
 
 export const aboutMindXFAQ = [

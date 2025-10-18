@@ -11,7 +11,7 @@ class TelemetryService {
 
   trackEvent(
     eventName: string,
-    properties?: Record<string, string>,
+    properties?: Record<string, any>,
     measurements?: Record<string, number>
   ) {
     if (this.client) {
