@@ -1,7 +1,7 @@
 import express from "express";
-import { handleAsyncError } from "@/utils";
-import { authenticate } from "@/middleware";
-import { streamingChatCompletion } from "@/controllers/ai.controller";
+import { handleAsyncError } from "../utils";
+import { authenticate } from "../middleware";
+import { streamingChatCompletion } from "../controllers/ai.controller";
 
 const router = express.Router();
 
