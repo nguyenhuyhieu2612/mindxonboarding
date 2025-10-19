@@ -4,8 +4,8 @@ import { Document } from "@langchain/core/documents";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { config } from "@/config";
-import { logger } from "@/utils/logger";
+import { config } from "../config";
+import { logger } from "../utils/logger";
 
 /**
  * Simple RAG Service using in-memory vector store

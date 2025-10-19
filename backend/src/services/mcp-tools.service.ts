@@ -1,5 +1,5 @@
-import { prisma } from "@/config/prisma-client";
-import { logger } from "@/utils";
+import { prisma } from "../config/prisma-client";
+import { logger } from "../utils";
 import * as fs from "fs/promises";
 import * as path from "path";
 
