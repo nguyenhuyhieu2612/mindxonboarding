@@ -1,0 +1,77 @@
+MindX Technology School - Thông tin tổ chức
+
+VỀ MINDX:
+MindX (Technology School) là tổ chức giáo dục công nghệ hàng đầu tại Việt Nam. 
+Tầm nhìn: Trở thành tổ chức giáo dục công nghệ hàng đầu Đông Nam Á.
+Sứ mệnh: Đào tạo nguồn nhân lực công nghệ chất lượng cao.
+
+ĐỐI TƯỢNG HỌC VIÊN:
+- Trẻ em và thiếu niên (6-18 tuổi)
+- Sinh viên và người đi làm
+- Doanh nghiệp (đào tạo nội bộ)
+
+CÁC KHÓA HỌC CHÍNH:
+
+1. Lập trình cho Thiếu nhi:
+   - Scratch Programming (6-10 tuổi): 6 tháng, 3-4 triệu VNĐ
+   - Python for Kids (10-14 tuổi): 9 tháng, 4.5-5.5 triệu VNĐ
+   - Web Development for Teens (14-18 tuổi): 12 tháng, 6-7 triệu VNĐ
+
+2. Lập trình cho Người lớn:
+   - Full-stack Web Development: 6 tháng, 15-18 triệu VNĐ
+     (HTML, CSS, JavaScript, React, Node.js, PostgreSQL, Docker)
+   - Data Science & Machine Learning: 6 tháng, 16-20 triệu VNĐ
+     (Python, Pandas, ML algorithms, TensorFlow)
+   - Mobile App Development: 5 tháng, 14-17 triệu VNĐ
+     (React Native, iOS/Android)
+
+3. Khóa học ngắn hạn:
+   - Git & GitHub: 1 tháng, 1.5 triệu VNĐ
+   - Docker & Kubernetes: 1.5 tháng, 2.5 triệu VNĐ  
+   - AWS Cloud: 2 tháng, 3.5 triệu VNĐ
+
+CHÍNH SÁCH HỌC PHÍ:
+- Giảm 10% đăng ký sớm (Early bird)
+- Giảm 15% nhóm từ 3 người
+- Giảm 20% học viên cũ
+- Thanh toán 1 lần: Giảm thêm 5%
+- Trả góp 2-3 kỳ: Có hỗ trợ
+
+ĐĂNG KÝ HỌC:
+Bước 1: Liên hệ tư vấn qua hotline 0123-456-789 hoặc website www.mindx.edu.vn
+Bước 2: Đánh giá năng lực (nếu cần)
+Bước 3: Điền form đăng ký + nộp học phí
+Bước 4: Nhận tài khoản học tập trên hệ thống LMS
+
+HỖ TRỢ HỌC VIÊN:
+- Mentor 1-1 khi gặp khó khăn
+- Study group với bạn học
+- Office hours với giảng viên
+- Hỗ trợ tìm việc sau khóa học
+- Truy cập tài liệu vĩnh viễn
+
+LỊCH HỌC:
+- Học sinh/Sinh viên: Tối 2-4-6 hoặc 3-5-7 (18h-20h30)
+- Người đi làm: Cuối tuần (Sáng 9h-12h, Chiều 14h-17h)
+- Intensive: T2-T6 toàn thời gian (9h-17h)
+
+LIÊN HỆ:
+- Website: www.mindx.edu.vn
+- Hotline: 0123-456-789
+- Email: admissions@mindx.edu.vn
+- Địa chỉ Hà Nội: Tầng 3, Tòa nhà ABC, Đường XYZ
+- Địa chỉ TP.HCM: Tầng 5, Tòa nhà DEF, Đường UVW
+
+PHƯƠNG PHÁP GIẢNG DẠY:
+- Project-based Learning: Học qua dự án thực tế
+- Hands-on Practice: Thực hành nhiều
+- Mentorship: Hỗ trợ 1-1
+- Real-world Problems: Bài toán thực tế từ doanh nghiệp
+
+CHỨNG CHỈ:
+Sau khóa học nhận được:
+- Chứng chỉ hoàn thành từ MindX
+- Certificate of Completion (quốc tế)
+- Portfolio với dự án thực tế
+- Hỗ trợ viết CV và phỏng vấn
+

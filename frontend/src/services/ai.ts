@@ -96,3 +96,48 @@ export async function* streamChatMessage(
     reader.releaseLock();
   }
 }
+
+/**
+ * Response from chat with tools endpoint
+ */
+export interface ChatWithToolsResponse {
+  success: boolean;
+  message: string;
+  toolsUsed?: string[];
+  metadata?: {
+    model?: string;
+    latency?: number;
+  };
+}
+
+/**
+ * Send chat message with tool calling support (non-streaming)
+ * AI can call tools like query_users, read_file, get_weather
+ */
+export async function chatWithTools(
+  request: ChatRequest
+): Promise<ChatWithToolsResponse> {
+  const state = (await import("@/store")).store.getState();
+  const accessToken = state.auth.accessToken;
+
+  const baseURL =
+    (import.meta as any).env?.DEV === true
+      ? "http://localhost:3000"
+      : window.location.origin + "/api";
+
+  const response = await fetch(`${baseURL}/ai/chat/tools`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: "include",
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
+}

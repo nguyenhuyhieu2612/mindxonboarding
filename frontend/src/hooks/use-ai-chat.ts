@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { streamChatMessage, ChatMessage } from "@/services/ai";
+import { streamChatMessage, chatWithTools, ChatMessage } from "@/services/ai";
 import { trackGA4Event } from "@/lib/analytics";
 
 export interface Message {
@@ -7,12 +7,14 @@ export interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  toolsUsed?: string[]; // Tools that were used for this message
 }
 
 export const useAIChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toolsEnabled, setToolsEnabled] = useState(false); // Toggle for tools mode
 
   const sendMessage = useCallback(
     async (userMessage: string) => {
@@ -50,34 +52,65 @@ export const useAIChat = () => {
         // Track event
         trackGA4Event("ai_chat_start", {
           message_length: userMessage.length,
+          tools_enabled: toolsEnabled,
         });
 
-        // Stream response
-        const stream = streamChatMessage({
-          message: userMessage,
-          conversationHistory,
-        });
+        if (toolsEnabled) {
+          // ✅ TOOLS MODE: Non-streaming with tool calling
+          const response = await chatWithTools({
+            message: userMessage,
+            conversationHistory,
+          });
 
-        let fullContent = "";
+          const duration = Date.now() - startTime;
 
-        for await (const chunk of stream) {
-          fullContent += chunk;
+          // Update message with tool results
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantMsg.id
-                ? { ...msg, content: fullContent }
+                ? {
+                    ...msg,
+                    content: response.message,
+                    toolsUsed: response.toolsUsed,
+                  }
                 : msg
             )
           );
+
+          // Track success
+          trackGA4Event("ai_chat_with_tools_complete", {
+            duration,
+            tools_used: response.toolsUsed?.join(", ") || "none",
+            response_length: response.message.length,
+          });
+        } else {
+          // ✅ STREAMING MODE: Real-time streaming
+          const stream = streamChatMessage({
+            message: userMessage,
+            conversationHistory,
+          });
+
+          let fullContent = "";
+
+          for await (const chunk of stream) {
+            fullContent += chunk;
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMsg.id
+                  ? { ...msg, content: fullContent }
+                  : msg
+              )
+            );
+          }
+
+          const duration = Date.now() - startTime;
+
+          // Track success
+          trackGA4Event("ai_chat_complete", {
+            duration,
+            response_length: fullContent.length,
+          });
         }
-
-        const duration = Date.now() - startTime;
-
-        // Track success
-        trackGA4Event("ai_chat_complete", {
-          duration,
-          response_length: fullContent.length,
-        });
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to get AI response";
@@ -89,6 +122,7 @@ export const useAIChat = () => {
         // Track error
         trackGA4Event("ai_chat_error", {
           error: errorMessage,
+          tools_enabled: toolsEnabled,
         });
 
         console.error("AI Chat Error:", err);
@@ -96,12 +130,16 @@ export const useAIChat = () => {
         setIsStreaming(false);
       }
     },
-    [messages, isStreaming]
+    [messages, isStreaming, toolsEnabled]
   );
 
   const clearMessages = useCallback(() => {
     setMessages([]);
     setError(null);
+  }, []);
+
+  const toggleTools = useCallback(() => {
+    setToolsEnabled((prev) => !prev);
   }, []);
 
   return {
@@ -110,6 +148,7 @@ export const useAIChat = () => {
     error,
     sendMessage,
     clearMessages,
+    toolsEnabled,
+    toggleTools,
   };
 };
-

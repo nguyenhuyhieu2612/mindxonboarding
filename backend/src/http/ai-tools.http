@@ -1,0 +1,62 @@
+### Test AI Chat with Tools
+
+### 1. Test query_users tool
+POST http://localhost:3000/ai/chat/tools
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+{
+  "message": "Show me list of users in the system",
+  "conversationHistory": []
+}
+
+###
+
+### 2. Test read_file tool
+POST http://localhost:3000/ai/chat/tools
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+{
+  "message": "Read the mindx-info.txt file for me",
+  "conversationHistory": []
+}
+
+###
+
+### 3. Test get_weather tool
+POST http://localhost:3000/ai/chat/tools
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+{
+  "message": "What's the weather in Hanoi?",
+  "conversationHistory": []
+}
+
+###
+
+### 4. Test multiple questions (AI decides when to use tools)
+POST http://localhost:3000/ai/chat/tools
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+{
+  "message": "Tell me about MindX courses and also show me the weather in Ho Chi Minh",
+  "conversationHistory": []
+}
+
+###
+
+### 5. Test without tool (should answer directly from RAG)
+POST http://localhost:3000/ai/chat/tools
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+{
+  "message": "What courses does MindX offer?",
+  "conversationHistory": []
+}
+
+###
+

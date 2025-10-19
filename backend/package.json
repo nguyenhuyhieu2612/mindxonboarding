@@ -18,6 +18,7 @@
   "author": "MindX Engineer",
   "license": "MIT",
   "dependencies": {
+    "@langchain/community": "^1.0.0",
     "@langchain/core": "^0.3.78",
     "@langchain/google-genai": "^0.2.18",
     "@prisma/client": "^6.17.0",

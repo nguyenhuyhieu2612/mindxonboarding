@@ -1,7 +1,10 @@
 import express from "express";
 import { handleAsyncError } from "../utils";
 import { authenticate } from "../middleware";
-import { streamingChatCompletion } from "../controllers/ai.controller";
+import {
+  streamingChatCompletion,
+  chatWithTools,
+} from "../controllers/ai.controller";
 
 const router = express.Router();
 
@@ -15,5 +18,12 @@ router.post(
   authenticate,
   handleAsyncError(streamingChatCompletion)
 );
+
+/**
+ * @route   POST /api/ai/chat/tools
+ * @desc    Chat with AI that can call tools
+ * @access  Protected
+ */
+router.post("/chat/tools", authenticate, handleAsyncError(chatWithTools));
 
 export default router;
