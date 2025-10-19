@@ -96,11 +96,11 @@ class MCPToolService {
     try {
       switch (toolName) {
         case "query_users":
-          return await this.queryUsers(parameters);
+          return await this.queryUsers(parameters as { limit?: number });
         case "read_file":
-          return await this.readFile(parameters);
+          return await this.readFile(parameters as { filename: string });
         case "get_weather":
-          return await this.getWeather(parameters);
+          return await this.getWeather(parameters as { location: string });
         default:
           return {
             success: false,
