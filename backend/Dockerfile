@@ -9,8 +9,8 @@ COPY package*.json ./
 COPY tsconfig.json ./
 COPY prisma ./prisma
 
-RUN npm ci
-RUN npx prisma generate   # 👈 Thêm dòng này để tạo client trước khi build
+RUN npm ci --legacy-peer-deps
+RUN npx prisma generate
 
 COPY src/ ./src/
 RUN npm run build
@@ -28,11 +28,12 @@ WORKDIR /app
 
 COPY package*.json ./
 COPY prisma ./prisma         
-RUN npm ci --only=production && \
+RUN npm ci --only=production --legacy-peer-deps && \
     npx prisma generate && \ 
     npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
+COPY knowledge-base ./knowledge-base
 
 RUN chown -R nodeuser:nodejs /app
 USER nodeuser
